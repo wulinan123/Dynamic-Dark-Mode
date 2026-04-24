@@ -216,19 +216,36 @@ final class SettingsStore: ObservableObject {
     
     func selectLightWallpaper() {
         DynamicDesktopSettingsViewController.selectImage { [weak self] url in
-            self?.lightDesktopURL = url
+            guard let self else { return }
+            var selection = DesktopWallpaperSelection(
+                lightURL: self.lightDesktopURL,
+                darkURL: self.darkDesktopURL
+            )
+            selection.set(url, for: .light)
+            self.lightDesktopURL = selection.lightURL
         }
     }
     
     func selectDarkWallpaper() {
         DynamicDesktopSettingsViewController.selectImage { [weak self] url in
-            self?.darkDesktopURL = url
+            guard let self else { return }
+            var selection = DesktopWallpaperSelection(
+                lightURL: self.lightDesktopURL,
+                darkURL: self.darkDesktopURL
+            )
+            selection.set(url, for: .dark)
+            self.darkDesktopURL = selection.darkURL
         }
     }
     
     func clearWallpapers() {
-        lightDesktopURL = nil
-        darkDesktopURL = nil
+        var selection = DesktopWallpaperSelection(
+            lightURL: lightDesktopURL,
+            darkURL: darkDesktopURL
+        )
+        selection.clear()
+        lightDesktopURL = selection.lightURL
+        darkDesktopURL = selection.darkURL
     }
     
     func checkForUpdates() {

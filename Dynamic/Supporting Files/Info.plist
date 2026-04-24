@@ -34,8 +34,6 @@
 	<string>Copyright © 2018-2022 Dynamic Dark Mode. All rights reserved.</string>
 	<key>NSLocationUsageDescription</key>
 	<string>This is how Dynamic Dark Mode calculates sunset/sunrise time.</string>
-	<key>NSMainStoryboardFile</key>
-	<string>Main</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<key>SUEnableAutomaticChecks</key>

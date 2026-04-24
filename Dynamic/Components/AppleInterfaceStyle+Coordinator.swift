@@ -38,7 +38,7 @@ public class AppleInterfaceStyleCoordinator: NSObject {
             forName: .appearanceMonitorDidChange,
             object: nil,
             queue: .main
-        ) { _, _ in
+        ) { _ in
             AppleInterfaceStyle.updateWallpaper()
         }
         guard preferences.scheduled else {
