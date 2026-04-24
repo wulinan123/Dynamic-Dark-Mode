@@ -19,16 +19,21 @@ public enum AppleScript: String, CaseIterable {
 // MARK: - Execution
 
 extension AppleScript {
-    public func execute() {
+    public func execute(then completion: CompletionHandler? = nil) {
         let frontmostApplication = NSWorkspace.shared.frontmostApplication
         AppleScript.requestPermission { authorized in
-            defer { frontmostApplication?.activate(options: [.activateIgnoringOtherApps]) }
-            
-            if authorized {
-                self.useAppleScriptImplementation()
-            } else {
-                self.useNonAppStoreCompliantImplementation()
+            let mutate = {
+                if authorized {
+                    self.useAppleScriptImplementation()
+                } else {
+                    self.useNonAppStoreCompliantImplementation()
+                }
+                self.finishMutation(
+                    restoring: frontmostApplication,
+                    then: completion
+                )
             }
+            DispatchQueue.main.async(execute: mutate)
         }
     }
     
@@ -63,6 +68,21 @@ extension AppleScript {
             SLSSetAppearanceThemeLegacy(true)
         case .disableDarkMode:
             SLSSetAppearanceThemeLegacy(false)
+        }
+    }
+    
+    private func finishMutation(
+        restoring application: NSRunningApplication?,
+        then completion: CompletionHandler?
+    ) {
+        let refresh = {
+            AppearanceMonitor.shared.refresh()
+            completion?()
+            application?.activate(options: [.activateIgnoringOtherApps])
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12, execute: refresh)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
+            AppearanceMonitor.shared.refresh()
         }
     }
 }

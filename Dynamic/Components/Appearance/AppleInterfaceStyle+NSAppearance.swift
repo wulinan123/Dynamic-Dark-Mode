@@ -6,37 +6,65 @@
 //  Copyright © 2018-2022 Dynamic Dark Mode. All rights reserved.
 //
 
+import AppKit
+import Combine
 import Foundation
-import Cocoa
 
-// MARK: - Detect Dark Mode
+extension Notification.Name {
+    static let appearanceMonitorDidChange = Notification.Name("AppearanceMonitor.didChange")
+}
 
-extension NSAppearance {
-    var isDark: Bool {
-        switch name {
-        case .aqua, .accessibilityHighContrastAqua,
-             .vibrantLight, .accessibilityHighContrastVibrantLight:
-            return false
-        case .darkAqua, .accessibilityHighContrastDarkAqua,
-             .vibrantDark, .accessibilityHighContrastVibrantDark:
-            return true
-        default:
-            #if DEBUG
-            fatalError(name.rawValue)
-            #else
-            debugPrint("Dynamic Dark Mode - Unrecognized appearance: \(name.rawValue)")
-            return false
-            #endif
+@MainActor
+final class AppearanceMonitor: ObservableObject {
+    static let shared = AppearanceMonitor()
+    
+    @Published private(set) var currentStyle: AppleInterfaceStyle = AppleInterfaceStyle.systemCurrent
+    
+    private var isObserving = false
+    private var distributedObserver: NSObjectProtocol?
+    private var appObserver: NSObjectProtocol?
+    
+    private init() { }
+    
+    func startObserving() {
+        guard !isObserving else { return }
+        isObserving = true
+        distributedObserver = DistributedNotificationCenter.default().addObserver(
+            forName: Notification.Name("AppleInterfaceThemeChangedNotification"),
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.refresh()
         }
+        appObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didBecomeActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.refresh()
+        }
+        refresh()
+    }
+    
+    func refresh() {
+        let resolved = AppleInterfaceStyle.systemCurrent
+        if currentStyle != resolved {
+            currentStyle = resolved
+        }
+        NotificationCenter.default.post(name: .appearanceMonitorDidChange, object: resolved)
     }
 }
 
 extension AppleInterfaceStyle {
+    static var systemCurrent: AppleInterfaceStyle {
+        SLSGetAppearanceThemeLegacy() ? .darkAqua : .aqua
+    }
+    
     static var current: AppleInterfaceStyle {
-        return isDark ? .darkAqua : .aqua
+        AppearanceMonitor.shared.currentStyle
     }
     
     static var isDark: Bool {
-        return NSApp.effectiveAppearance.isDark
+        current == .darkAqua
     }
 }

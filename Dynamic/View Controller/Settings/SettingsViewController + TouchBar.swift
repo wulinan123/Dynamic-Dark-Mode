@@ -2,125 +2,109 @@
 //  SettingsViewController + TouchBar.swift
 //  Dynamic Dark Mode
 //
-//  Created by Captain雪ノ下八幡 on 2018/6/27.
+//  Created by Apollo Zhu on 6/9/18.
 //  Copyright © 2018-2022 Dynamic Dark Mode. All rights reserved.
 //
 
-import Cocoa
+import AppKit
+import MASShortcut
+import SwiftUI
 
-extension SettingsViewController: NSTouchBarDelegate {
-    override func makeTouchBar() -> NSTouchBar? {
-        let touchBar = NSTouchBar()
-        touchBar.delegate = self
-        touchBar.defaultItemIdentifiers = [.thresholdPopoverItem, .scheduleTypePopoverItem]
-        return touchBar
-    }
+struct SettingsPaneScroll<Content: View>: View {
+    let title: String
+    let subtitle: String
+    @ViewBuilder var content: Content
     
-    func touchBar(_ touchBar: NSTouchBar, makeItemForIdentifier identifier: NSTouchBarItem.Identifier) -> NSTouchBarItem? {
-        let defaultsController = NSUserDefaultsController.shared
-        switch identifier {
-        case .thresholdPopoverItem:
-            let popoverItem = NSPopoverTouchBarItem(identifier: identifier)
-            let sliderTouchBar = NSTouchBar()
-            sliderTouchBar.defaultItemIdentifiers = [.thresholdSubSliderItem]
-            sliderTouchBar.delegate = self
-            popoverItem.popoverTouchBar = sliderTouchBar
-            popoverItem.pressAndHoldTouchBar = sliderTouchBar
-            popoverItem.collapsedRepresentationLabel = LocalizedString.SettingsViewController.autoAdjustThreshold
-            popoverItem.view?.bind(.enabled, to: defaultsController,
-                                   withKeyPath: preferences.bindingKeyPath(\.adjustForBrightness), options: nil)
-            if #available(macOS 10.15, *) {
-                popoverItem.view?.bindEnabledToNotAppleInterfaceStyleSwitchesAutomatically(withName: .enabled2)
-            }
-            return popoverItem
-        case .thresholdSubSliderItem:
-            let sliderItem = NSSliderTouchBarItem(identifier: identifier)
-            sliderItem.label = LocalizedString.SettingsViewController.autoAdjustThreshold
-            sliderItem.slider.minValue = 0
-            sliderItem.slider.maxValue = 100
-            sliderItem.slider.bind(.value, to: defaultsController,
-                                   withKeyPath: preferences.bindingKeyPath(\.brightnessThreshold), options: nil)
-            sliderItem.slider.bind(.enabled, to: defaultsController,
-                                   withKeyPath: preferences.bindingKeyPath(\.adjustForBrightness), options: nil)
-            if #available(macOS 10.15, *) {
-                sliderItem.slider.bindEnabledToNotAppleInterfaceStyleSwitchesAutomatically(withName: .enabled2)
-            }
-            return sliderItem
-        case .scheduleTypePopoverItem:
-            let popoverItem = NSPopoverTouchBarItem(identifier: identifier)
-            let scrubberTouchBar = NSTouchBar()
-            scrubberTouchBar.defaultItemIdentifiers = [.scheduleTypeSubScrubberItem]
-            scrubberTouchBar.delegate = self
-            popoverItem.collapsedRepresentationLabel = LocalizedString.SettingsViewController.scheduleMode
-            popoverItem.popoverTouchBar = scrubberTouchBar
-            popoverItem.view?.bind(.enabled, to: defaultsController,
-                                   withKeyPath: preferences.bindingKeyPath(\.scheduled), options: nil)
-            return popoverItem
-        case .scheduleTypeSubScrubberItem:
-            let scrubber = NSScrubber()
-            scrubber.dataSource = self
-            scrubber.delegate = self
-            scrubber.floatsSelectionViews = true
-            scrubber.isContinuous = true
-            scrubber.mode = .fixed
-            scrubber.floatsSelectionViews = true
-            scrubber.selectionOverlayStyle = .outlineOverlay
-            scrubber.scrubberLayout = NSScrubberProportionalLayout(
-                numberOfVisibleItems: numberOfItems(for: scrubber)
+    var body: some View {
+        ZStack {
+            LinearGradient(
+                colors: [
+                    Color(red: 0.97, green: 0.98, blue: 1.0),
+                    Color(red: 0.95, green: 0.97, blue: 0.95),
+                    Color(red: 0.99, green: 0.96, blue: 0.92)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
             )
-            scrubber.backgroundColor = .scrubberTexturedBackground
-            scrubber.bind(.selectedIndex, to: defaultsController,
-                          withKeyPath: preferences.bindingKeyPath(\.scheduleType), options: nil)
-            let scrubberItem = NSCustomTouchBarItem(identifier: identifier)
-            scrubberItem.view = scrubber
-            return scrubberItem
-        default:
-            fatalError("Unexpected identifier")
+            .ignoresSafeArea()
+            
+            ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(title)
+                            .font(.system(size: 30, weight: .bold, design: .rounded))
+                        Text(subtitle)
+                            .font(.title3)
+                            .foregroundStyle(.secondary)
+                    }
+                    
+                    content
+                }
+                .padding(28)
+            }
         }
     }
 }
 
-extension SettingsViewController: NSScrubberDataSource, NSScrubberDelegate {
-    func numberOfItems(for scrubber: NSScrubber) -> Int {
-        return Zenith.hasZenithTypeSystem ? 6 : 5
-    }
+struct SettingsCard<Content: View>: View {
+    let title: String
+    let subtitle: String
+    @ViewBuilder var content: Content
     
-    func scrubber(_ scrubber: NSScrubber, viewForItemAt index: Int) -> NSScrubberItemView {
-        let view = NSScrubberTextItemView()
-        switch index {
-        case 0:
-            view.title = LocalizedString.SunsetSunrise.official
-        case 1:
-            view.title = LocalizedString.SunsetSunrise.civil
-        case 2:
-            view.title = LocalizedString.SunsetSunrise.nautical
-        case 3:
-            view.title = LocalizedString.SunsetSunrise.astronomical
-        case 4:
-            view.title = LocalizedString.SunsetSunrise.customRange
-        case 5:
-            guard Zenith.hasZenithTypeSystem else { fallthrough }
-            view.title = LocalizedString.SunsetSunrise.system
-        default:
-            fatalError("Unexpected index number")
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(title)
+                    .font(.title3.weight(.semibold))
+                Text(subtitle)
+                    .foregroundStyle(.secondary)
+            }
+            content
+        }
+        .padding(24)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .strokeBorder(Color.white.opacity(0.2))
+        )
+    }
+}
+
+struct WindowAccessor: NSViewRepresentable {
+    let identifier: NSUserInterfaceItemIdentifier
+    let configure: (NSWindow) -> Void
+    
+    func makeNSView(context: Context) -> NSView {
+        let view = NSView(frame: .zero)
+        DispatchQueue.main.async {
+            if let window = view.window {
+                applyConfiguration(to: window)
+            }
         }
         return view
     }
     
-    func scrubber(_ scrubber: NSScrubber, didSelectItemAt selectedIndex: Int) {
-        preferences.scheduleZenithType = Zenith(rawValue: selectedIndex) ?? .official
+    func updateNSView(_ nsView: NSView, context: Context) {
+        DispatchQueue.main.async {
+            if let window = nsView.window {
+                applyConfiguration(to: window)
+            }
+        }
+    }
+    
+    private func applyConfiguration(to window: NSWindow) {
+        window.identifier = identifier
+        configure(window)
     }
 }
 
-extension NSTouchBarItem.Identifier: ExpressibleByStringLiteral {
-    public init(stringLiteral value: StringLiteralType) {
-        self.init(rawValue: value)
+struct ShortcutRecorderView: NSViewRepresentable {
+    func makeNSView(context: Context) -> MASShortcutView {
+        let view = MASShortcutView(frame: .zero)
+        view.associatedUserDefaultsKey = Preferences.toggleShortcutKey
+        return view
     }
-}
-
-extension NSTouchBarItem.Identifier {
-    static let thresholdPopoverItem = "thresholdPopoverItem" as NSTouchBarItem.Identifier
-    static let scheduleTypePopoverItem = "scheduleTypePopoverItem" as NSTouchBarItem.Identifier
-    static let thresholdSubSliderItem = "thresholdSubSliderItem" as NSTouchBarItem.Identifier
-    static let scheduleTypeSubScrubberItem = "scheduleTypeSubSliderItem" as NSTouchBarItem.Identifier
+    
+    func updateNSView(_ nsView: MASShortcutView, context: Context) { }
 }

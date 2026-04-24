@@ -20,7 +20,7 @@ public final class Scheduler: NSObject {
     }
     
     @objc public func schedule(startBrightnessObserverOnFailure: Bool = false) {
-        if #available(macOS 10.15, *), preferences.AppleInterfaceStyleSwitchesAutomatically { return }
+        if preferences.AppleInterfaceStyleSwitchesAutomatically { return }
         func processLocation(_ result: Location) {
             switch result {
             case .current(let location):
@@ -76,7 +76,7 @@ public final class Scheduler: NSObject {
     // Mark: - Mode
     
     public func updateSchedule(then process: @escaping Handler<Result<Void, Error>>) {
-        if #available(macOS 10.15, *), preferences.AppleInterfaceStyleSwitchesAutomatically {
+        if preferences.AppleInterfaceStyleSwitchesAutomatically {
             return process(.failure(AnError(errorDescription: "AppleInterfaceStyleSwitchesAutomatically")))
         }
         getCurrentMode { [weak self] in process($0.map {

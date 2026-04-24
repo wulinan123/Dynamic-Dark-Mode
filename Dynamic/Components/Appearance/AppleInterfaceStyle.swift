@@ -16,23 +16,22 @@ public enum AppleInterfaceStyle: String {
 // MARK: - Toggle Dark Mode
 
 extension AppleInterfaceStyle {
-    
-    static func toggle() {
-        AppleScript.toggleDarkMode.execute()
+    static func toggle(then completion: CompletionHandler? = nil) {
+        AppleScript.toggleDarkMode.execute(then: completion)
     }
     
-    func enable() {
+    func enable(then completion: CompletionHandler? = nil) {
         guard AppleInterfaceStyle.current != self else { return }
         switch self {
         case .aqua:
-            AppleScript.disableDarkMode.execute()
+            AppleScript.disableDarkMode.execute(then: completion)
         case .darkAqua:
-            AppleScript.enableDarkMode.execute()
+            AppleScript.enableDarkMode.execute(then: completion)
         }
     }
     
     static func updateWallpaper() {
-        guard let url = isDark
+        guard let url = current == .darkAqua
             ? preferences.darkDesktopURL
             : preferences.lightDesktopURL
             else { return }
@@ -41,5 +40,15 @@ extension AppleInterfaceStyle {
             try? workspace.setDesktopImageURL(url, for: screen)
         }
     }
-    
+}
+
+extension AppleInterfaceStyle {
+    var toggled: AppleInterfaceStyle {
+        switch self {
+        case .aqua:
+            return .darkAqua
+        case .darkAqua:
+            return .aqua
+        }
+    }
 }

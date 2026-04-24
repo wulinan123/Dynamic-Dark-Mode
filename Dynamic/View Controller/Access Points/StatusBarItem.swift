@@ -6,13 +6,14 @@
 //  Copyright © 2018-2022 Dynamic Dark Mode. All rights reserved.
 //
 
-import Cocoa
+import AppKit
+import Combine
 
 public final class StatusBarItem {
     public static let only = StatusBarItem()
     private init() { }
     
-    enum Style: Int {
+    enum Style: Int, CaseIterable {
         case menu
         case rightClick
         case hidden
@@ -21,7 +22,16 @@ public final class StatusBarItem {
     private var statusBarItem: NSStatusItem?
     
     private var statusBarItemImage: NSImage {
-        AppleInterfaceStyle.isDark ? #imageLiteral(resourceName: "dark") : #imageLiteral(resourceName: "light")
+        let symbolName = AppearanceMonitor.shared.currentStyle == .darkAqua
+            ? "moon.fill"
+            : "sun.max.fill"
+        let image = NSImage(
+            systemSymbolName: symbolName,
+            accessibilityDescription: nil
+        ) ?? NSImage()
+        image.isTemplate = true
+        image.size = NSSize(width: 18, height: 18)
+        return image
     }
     
     private func createStatusBarItemIfNecessary() {
@@ -30,6 +40,7 @@ public final class StatusBarItem {
             withLength: NSStatusItem.squareLength
         )
         statusBarItem?.button?.image = statusBarItemImage
+        statusBarItem?.button?.imageScaling = .scaleProportionallyDown
         statusBarItem?.button?.sendAction(on: [.leftMouseUp, .rightMouseUp])
         statusBarItem?.button?.action = #selector(handleEvent)
         statusBarItem?.button?.target = self
@@ -37,7 +48,7 @@ public final class StatusBarItem {
     
     @objc private func handleEvent() {
         if NSApp.currentEvent?.type == .rightMouseUp {
-            SettingsViewController.show()
+            WindowRouter.shared.showSettings()
         } else {
             AppleInterfaceStyle.Coordinator.toggleOrShowInterface()
         }
@@ -64,11 +75,11 @@ public final class StatusBarItem {
                 "Menu.preferences",
                 value: "Preferences…",
                 comment: "Drop down menu item to show preferences"),
-            action: #selector(SettingsViewController.show),
+            action: #selector(WindowRouter.showSettingsAction),
             keyEquivalent: ","
         )
         preferencesItem.keyEquivalentModifierMask = .command
-        preferencesItem.target = SettingsViewController.self
+        preferencesItem.target = WindowRouter.shared
         menu.addItem(preferencesItem)
         let quitItem = NSMenuItem(
             title: NSLocalizedString(
@@ -83,15 +94,16 @@ public final class StatusBarItem {
         return menu
     }
     
-    private var appearanceObservation: NSKeyValueObservation?
+    private var appearanceObservation: AnyCancellable?
     private var settingsStyleObservation: NSKeyValueObservation?
     
     public func startObserving() {
-        appearanceObservation = NSApp.observe(\.effectiveAppearance) {
-            [weak self] _, _ in
-            guard let self = self else { return }
-            self.statusBarItem?.button?.image = self.statusBarItemImage
-        }
+        appearanceObservation = AppearanceMonitor.shared.$currentStyle
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                self.statusBarItem?.button?.image = self.statusBarItemImage
+            }
         settingsStyleObservation = preferences.observe(
             \.rawSettingsStyle, options: [.initial, .new]
         ) { [weak self] _, change in
@@ -112,7 +124,33 @@ public final class StatusBarItem {
     }
     
     public func stopObserving() {
-        appearanceObservation?.invalidate()
+        appearanceObservation = nil
         settingsStyleObservation?.invalidate()
+        settingsStyleObservation = nil
+    }
+}
+
+extension StatusBarItem.Style {
+    var localizedName: String {
+        switch self {
+        case .menu:
+            return NSLocalizedString(
+                "Settings.menuBarStyle.menu",
+                value: "Show Menu",
+                comment: "Menu bar left click shows a menu."
+            )
+        case .rightClick:
+            return NSLocalizedString(
+                "Settings.menuBarStyle.toggle",
+                value: "Left Click Toggles",
+                comment: "Menu bar left click toggles appearance and right click opens settings."
+            )
+        case .hidden:
+            return NSLocalizedString(
+                "Settings.menuBarStyle.hidden",
+                value: "Hidden",
+                comment: "Menu bar item is hidden."
+            )
+        }
     }
 }

@@ -7,51 +7,111 @@
 //
 
 import AppKit
+import SwiftUI
 import UserNotifications
+import Sparkle
 #if canImport(LetsMove)
 import LetsMove
 #endif
 
-@NSApplicationMain
-class AppDelegate: NSObject, NSApplicationDelegate {
+@MainActor
+final class AppUpdater: ObservableObject {
+    static let shared = AppUpdater()
+    
+    private let controller = SPUStandardUpdaterController(
+        startingUpdater: true,
+        updaterDelegate: nil,
+        userDriverDelegate: nil
+    )
+    
+    private init() { }
+    
+    var automaticallyChecksForUpdates: Bool {
+        get { controller.updater.automaticallyChecksForUpdates }
+        set {
+            guard controller.updater.automaticallyChecksForUpdates != newValue else { return }
+            controller.updater.automaticallyChecksForUpdates = newValue
+            objectWillChange.send()
+        }
+    }
+    
+    func checkForUpdates() {
+        controller.checkForUpdates(nil)
+    }
+}
+
+@MainActor
+final class AppBootstrapper {
+    static let shared = AppBootstrapper()
+    
+    private(set) var hasStarted = false
+    
+    private init() { }
+    
+    func startIfNeeded() {
+        guard !hasStarted else { return }
+        hasStarted = true
+        Preferences.setupDefaultsForNewFeatures()
+        Shortcut.startObserving()
+        if preferences.AppleInterfaceStyleSwitchesAutomatically {
+            Shortcut.stopObserving()
+            preferences.scheduleZenithType = .system
+        }
+        Preferences.startObserving()
+        AppleInterfaceStyle.Coordinator.setup()
+    }
+    
+    func stop() {
+        hasStarted = false
+        Shortcut.stopObserving()
+        Preferences.stopObserving()
+        AppleInterfaceStyle.Coordinator.tearDown()
+        Scheduler.shared.cancel()
+        ScreenBrightnessObserver.shared.stopObserving()
+    }
+    
+    func resetForOnboarding() {
+        guard let name = Bundle.main.bundleIdentifier else { return }
+        preferences.removePersistentDomain(forName: name)
+        stop()
+        TouchBar.hide()
+        AppearanceMonitor.shared.refresh()
+        WindowRouter.shared.closeSettingsWindow()
+        WindowRouter.shared.showOnboarding()
+    }
+}
+
+final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         #if !DEBUG
         PFMoveToApplicationsFolderIfNecessary()
         #endif
         
         UNUserNotificationCenter.current().delegate = self
+        _ = AppUpdater.shared
+        AppearanceMonitor.shared.startObserving()
         TouchBar.setup()
-        Shortcut.startObserving()
-        if #available(macOS 10.15, *), preferences.AppleInterfaceStyleSwitchesAutomatically {
-            Shortcut.stopObserving()
-            preferences.scheduleZenithType = .system
-        }
+        
         if preferences.hasLaunchedBefore {
-            Preferences.setupDefaultsForNewFeatures()
-            Preferences.startObserving()
-            AppleInterfaceStyle.Coordinator.setup()
+            AppBootstrapper.shared.startIfNeeded()
         } else {
-            Welcome.show()
+            TouchBar.hide()
+            WindowRouter.shared.showOnboarding()
         }
     }
     
-    public func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         reopen()
         return false
     }
     
     func applicationWillTerminate(_ notification: Notification) {
-        Welcome.close()
+        WindowRouter.shared.closeOnboarding()
         TouchBar.tearDown()
-        Preferences.stopObserving()
-        AppleInterfaceStyle.Coordinator.tearDown()
+        AppBootstrapper.shared.stop()
     }
 }
 
 func reopen() {
-    if preferences.hasLaunchedBefore {
-        SettingsViewController.show()
-    } else {
-        Welcome.show()
-    }
+    WindowRouter.shared.reopen()
 }

@@ -19,7 +19,7 @@ extension Preferences {
         preferences.adjustForBrightness = true
         preferences.brightnessThreshold = 0.5
         preferences.settingsStyle = .menu
-        if #available(macOS 10.15, *), preferences.AppleInterfaceStyleSwitchesAutomatically {
+        if preferences.AppleInterfaceStyleSwitchesAutomatically {
             preferences.scheduleZenithType = .system
         } else if Location.deniedAccess {
             preferences.scheduleZenithType = .custom
@@ -71,7 +71,7 @@ extension Preferences {
             },
             observe(\.scheduled) { change in
                 if change.newValue == true {
-                    if #available(macOS 10.15, *), preferences.AppleInterfaceStyleSwitchesAutomatically { return }
+                    if preferences.AppleInterfaceStyleSwitchesAutomatically { return }
                     Scheduler.shared.schedule()
                     Connectivity.default.scheduleWhenReconnected()
                 } else {
@@ -80,19 +80,17 @@ extension Preferences {
                 }
             },
             observe(\.scheduleType) { change in
-                if #available(macOS 10.15, *) {
-                    if preferences.scheduleZenithType == .system {
-                        if !SLSGetAppearanceThemeSwitchesAutomatically() {
-                            SLSSetAppearanceThemeSwitchesAutomatically(true)
-                        }
-                        preferences.scheduled = true
-                        AppleInterfaceStyle.Coordinator.tearDown(stopAppearanceObservation: false)
-                    } else {
-                        if SLSGetAppearanceThemeSwitchesAutomatically() {
-                            SLSSetAppearanceThemeSwitchesAutomatically(false)
-                        } else if preferences.scheduled, change.oldValue == Zenith.system.rawValue {
-                            return Scheduler.shared.updateSchedule { _ in }
-                        }
+                if preferences.scheduleZenithType == .system {
+                    if !SLSGetAppearanceThemeSwitchesAutomatically() {
+                        SLSSetAppearanceThemeSwitchesAutomatically(true)
+                    }
+                    preferences.scheduled = true
+                    AppleInterfaceStyle.Coordinator.tearDown(stopAppearanceObservation: false)
+                } else {
+                    if SLSGetAppearanceThemeSwitchesAutomatically() {
+                        SLSSetAppearanceThemeSwitchesAutomatically(false)
+                    } else if preferences.scheduled, change.oldValue == Zenith.system.rawValue {
+                        return Scheduler.shared.updateSchedule { _ in }
                     }
                 }
                 if preferences.scheduled {
@@ -128,20 +126,18 @@ extension Preferences {
                 ), issueID: 40)
             }
         ]
-        if #available(macOS 10.15, *) {
-            handles.append(observe(\.AppleInterfaceStyleSwitchesAutomatically) { (change) in
-                if change.newValue == true {
-                    preferences.scheduleZenithType = .system
-                    ScreenBrightnessObserver.shared.stopObserving()
-                    Shortcut.stopObserving()
-                } else {
-                    Shortcut.startObserving()
-                    if preferences.scheduleZenithType == .system {
-                        preferences.scheduleZenithType = .official
-                    }
+        handles.append(observe(\.AppleInterfaceStyleSwitchesAutomatically) { change in
+            if change.newValue == true {
+                preferences.scheduleZenithType = .system
+                ScreenBrightnessObserver.shared.stopObserving()
+                Shortcut.stopObserving()
+            } else {
+                Shortcut.startObserving()
+                if preferences.scheduleZenithType == .system {
+                    preferences.scheduleZenithType = .official
                 }
-            })
-        }
+            }
+        })
     }
 }
 
@@ -347,14 +343,19 @@ extension Preferences {
     
     static let toggleShortcutKey: String = "toggleShortcut"
     
-    @available(macOS 10.15, *)
     @objc dynamic var AppleInterfaceStyleSwitchesAutomatically: Bool {
-        return preferences.bool(forKey: #function)
+        get {
+            SLSGetAppearanceThemeSwitchesAutomatically()
+        }
+        set {
+            willChangeValue(forKey: #function)
+            SLSSetAppearanceThemeSwitchesAutomatically(newValue)
+            didChangeValue(forKey: #function)
+        }
     }
 }
 
 extension NSObject {
-    @available(macOS 10.15, *)
     func bindEnabledToNotAppleInterfaceStyleSwitchesAutomatically(withName name: NSBindingName = .enabled) {
         bind(name, to: NSUserDefaultsController.shared,
              withKeyPath: preferences.bindingKeyPath(\.AppleInterfaceStyleSwitchesAutomatically),

@@ -16,14 +16,16 @@ extension AppleInterfaceStyle {
 public class AppleInterfaceStyleCoordinator: NSObject {
     fileprivate override init() { super.init() }
     
-    private var appearanceObservation: NSKeyValueObservation? {
+    private var appearanceObservation: NSObjectProtocol? {
         didSet {
-            oldValue?.invalidate()
+            if let oldValue {
+                NotificationCenter.default.removeObserver(oldValue)
+            }
         }
     }
     
     @objc public func toggleOrShowInterface() {
-        if #available(macOS 10.15, *), preferences.AppleInterfaceStyleSwitchesAutomatically {
+        if preferences.AppleInterfaceStyleSwitchesAutomatically {
             reopen()
         } else {
             AppleInterfaceStyle.toggle()
@@ -32,7 +34,11 @@ public class AppleInterfaceStyleCoordinator: NSObject {
     
     public func setup() {
         tearDown()
-        appearanceObservation = NSApp.observe(\.effectiveAppearance) { _, _ in
+        appearanceObservation = NotificationCenter.default.addObserver(
+            forName: .appearanceMonitorDidChange,
+            object: nil,
+            queue: .main
+        ) { _, _ in
             AppleInterfaceStyle.updateWallpaper()
         }
         guard preferences.scheduled else {
@@ -49,7 +55,10 @@ public class AppleInterfaceStyleCoordinator: NSObject {
         Connectivity.default.stopObserving()
         ScreenBrightnessObserver.shared.stopObserving()
         if stopAppearanceObservation {
-            appearanceObservation = nil
+            if let appearanceObservation {
+                NotificationCenter.default.removeObserver(appearanceObservation)
+            }
+            self.appearanceObservation = nil
         }
     }
 }
