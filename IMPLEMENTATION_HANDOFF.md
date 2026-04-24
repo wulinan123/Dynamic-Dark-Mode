@@ -1,8 +1,27 @@
 # Dynamic Dark Mode 实现中断交接
 
+## 2026-04-24 补完结果
+
+- ✅ 已补回 `DynamicDesktopSettingsViewController.swift`，并补齐：
+  - `DynamicDesktopSettingsViewController.selectImage`
+  - `DynamicDesktopPanelView`
+  - `DesktopPreviewRow`
+- ✅ 已修复 `AppleInterfaceStyle+Coordinator.swift` 通知回调签名错误。
+- ✅ 已完成入口配置收尾：
+  - `Info.plist` 移除 `NSMainStoryboardFile`
+  - `project.pbxproj` 的 `MACOSX_DEPLOYMENT_TARGET` 统一提升到 `15.0`
+  - `Tools/main.swift` 的 appcast 最低系统版本更新为 `15.0`
+- ✅ 已补齐 `zh-Hans.lproj/Localizable.strings` 中 `Settings.*` / `Onboarding.*` 新 key（以及相关桌面面板 key）。
+- ✅ 已新增单测（Swift Package + XCTest）覆盖桌面壁纸选择核心逻辑：
+  - `DesktopWallpaperSelectionTests.testSanitizeKeepsFileURLs`
+  - `DesktopWallpaperSelectionTests.testSanitizeRejectsNonFileURLs`
+  - `DesktopWallpaperSelectionTests.testSetByKindAndClear`
+  - 本地执行 `swift test` 通过（3/3）。
+- ⚠️ 当前环境无 `xcodebuild`（`command not found`），因此无法在本环境执行 macOS App 真机构建与 UI 流程回归。
+
 ## 当前状态
 
-本次实现已中途停止，工作树处于**未完成且未验证可编译**状态。
+以下内容为历史中断记录，已由上方“2026-04-24 补完结果”覆盖。
 
 当前 `git status --short` 涉及的文件：
 

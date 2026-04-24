@@ -46,6 +46,7 @@ struct DesktopWallpaperSelection: Equatable {
 #if canImport(AppKit)
 import AppKit
 import SwiftUI
+import UniformTypeIdentifiers
 
 @MainActor
 final class DynamicDesktopSettingsViewController: NSViewController {

@@ -10,6 +10,10 @@ let package = Package(
         .target(
             name: "DesktopWallpaperSelection",
             path: "Dynamic/View Controller/Settings",
+            exclude: [
+                "SettingsViewController + TouchBar.swift",
+                "SettingsViewController.swift"
+            ],
             sources: ["DynamicDesktopSettingsViewController.swift"]
         ),
         .testTarget(
