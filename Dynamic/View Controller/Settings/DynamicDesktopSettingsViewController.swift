@@ -43,7 +43,7 @@ struct DesktopWallpaperSelection: Equatable {
     }
 }
 
-#if canImport(AppKit)
+#if canImport(AppKit) && !SWIFT_PACKAGE
 import AppKit
 import SwiftUI
 import UniformTypeIdentifiers

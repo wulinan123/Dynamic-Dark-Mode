@@ -6,6 +6,7 @@
 //  Copyright © 2018-2022 Dynamic Dark Mode. All rights reserved.
 //
 
+import AppKit
 import Foundation
 
 public enum AppleInterfaceStyle: String {

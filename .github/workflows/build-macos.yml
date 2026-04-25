@@ -1,0 +1,103 @@
+name: Build macOS App
+
+run-name: >-
+  Build macOS App (${{ github.event_name == 'workflow_dispatch' && inputs.configuration || 'Release' }})
+  by @${{ github.actor }}
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      configuration:
+        description: Xcode build configuration
+        required: true
+        default: Release
+        type: choice
+        options:
+          - Release
+          - Debug
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-macos-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Dynamic Dark Mode
+    runs-on: macos-15
+    timeout-minutes: 45
+    env:
+      BUILD_CONFIGURATION: ${{ github.event_name == 'workflow_dispatch' && inputs.configuration || 'Release' }}
+      DERIVED_DATA_PATH: build/DerivedData
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Show runner environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          sw_vers
+          uname -a
+          xcodebuild -version
+          swift --version
+
+      - name: Ensure CocoaPods is available
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v pod >/dev/null 2>&1; then
+            sudo gem install cocoapods
+          fi
+          pod --version
+
+      - name: Install Pods
+        shell: bash
+        run: |
+          set -euo pipefail
+          pod install
+
+      - name: Build support package target
+        shell: bash
+        run: |
+          set -euo pipefail
+          swift build --target DesktopWallpaperSelection
+
+      - name: Build app workspace
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build
+          xcodebuild \
+            -workspace "Dynamic Dark Mode.xcworkspace" \
+            -scheme "Dynamic Dark Mode" \
+            -configuration "$BUILD_CONFIGURATION" \
+            -destination "platform=macOS" \
+            -derivedDataPath "$DERIVED_DATA_PATH" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            build | tee build/xcodebuild.log
+
+      - name: Package build outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/artifacts
+          tar -czf "build/artifacts/Dynamic-Dark-Mode-${BUILD_CONFIGURATION}.tgz" \
+            -C "$DERIVED_DATA_PATH/Build/Products" \
+            "$BUILD_CONFIGURATION"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Dynamic-Dark-Mode-${{ env.BUILD_CONFIGURATION }}
+          path: |
+            build/artifacts/Dynamic-Dark-Mode-${{ env.BUILD_CONFIGURATION }}.tgz
+            build/xcodebuild.log
+          if-no-files-found: error
+          retention-days: 14
