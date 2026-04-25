@@ -73,9 +73,101 @@
 /* Official */
 "SunsetSunrise.official" = "标准";
 
+/* System */
+"SunsetSunrise.system" = "系统";
+
 /* No comment provided by engineer. */
 "SystemPreferences.open" = "打开“系统偏好设置”";
 
 /* No comment provided by engineer. */
 "SystemPreferences.skip" = "跳过";
 
+/* Welcome onboarding action. */
+"Onboarding.action.continue" = "继续";
+"Onboarding.action.skip" = "暂时跳过";
+"Onboarding.automation.eyebrow" = "自动化权限";
+"Onboarding.automation.message" = "这会授予“系统事件”权限，让应用可以从菜单栏、快捷键、Touch Bar 和自动化规则中切换浅色/深色外观。";
+"Onboarding.automation.title" = "允许自动深色模式切换系统外观。";
+"Onboarding.eyebrow" = "自动深色模式";
+"Onboarding.location.eyebrow" = "定位权限";
+"Onboarding.location.message" = "定位仅用于计算基于日出日落的切换时间。若跳过，仍可使用自定义时间和亮度自动化。";
+"Onboarding.location.title" = "使用你的位置计算日出日落切换。";
+"Onboarding.permission.checking" = "正在检查权限…";
+"Onboarding.step.automation" = "自动化";
+"Onboarding.step.location" = "定位";
+"Onboarding.step.welcome" = "欢迎";
+"Onboarding.welcome.message" = "全新的控制界面、更快的外观同步和更清爽的设置体验已经就绪。完成两项权限即可开始。";
+"Onboarding.welcome.title" = "更轻松的设置，更顺手的深色体验。";
+
+"Settings.about.app.subtitle" = "版本 %@";
+"Settings.about.app.title" = "自动深色模式";
+"Settings.about.feedback" = "发送反馈";
+"Settings.about.maintenance.subtitle" = "重新运行引导，或直接从设置页退出应用。";
+"Settings.about.maintenance.title" = "维护";
+"Settings.about.quit" = "退出";
+"Settings.about.reset" = "重新运行引导";
+"Settings.about.subtitle" = "项目信息、致谢、反馈与维护操作。";
+"Settings.about.title" = "关于";
+
+"Settings.automation.brightness.disableAtNight" = "在计划深色时段暂停亮度切换";
+"Settings.automation.brightness.subtitle" = "当显示器支持亮度变化时，自动根据环境亮度调整外观。";
+"Settings.automation.brightness.threshold" = "阈值：%.0f%%";
+"Settings.automation.brightness.title" = "亮度";
+"Settings.automation.brightness.toggle" = "根据亮度自动切换外观";
+"Settings.automation.location" = "最近位置";
+"Settings.automation.schedule.from" = "开始";
+"Settings.automation.schedule.mode" = "定时模式";
+"Settings.automation.schedule.subtitle" = "关闭系统自动化时，可使用日光预设或自定义时段。";
+"Settings.automation.schedule.title" = "定时";
+"Settings.automation.schedule.to" = "结束";
+"Settings.automation.schedule.toggle" = "启用定时切换";
+"Settings.automation.subtitle" = "组合系统自动化、定时、亮度与日光规则。";
+"Settings.automation.system.subtitle" = "启用后由 macOS 控制外观切换，手动切换将改为打开设置。";
+"Settings.automation.system.title" = "系统外观自动化";
+"Settings.automation.system.toggle" = "让 macOS 自动切换外观";
+"Settings.automation.title" = "自动化";
+
+"Settings.currentAppearance.dark" = "当前为深色外观";
+"Settings.currentAppearance.light" = "当前为浅色外观";
+
+"Settings.desktop.clear" = "清除";
+"Settings.desktop.manage" = "管理壁纸…";
+"Settings.desktop.panel.done" = "完成";
+"Settings.desktop.panel.mapping.subtitle" = "设置后，每次外观切换都会自动应用对应壁纸。";
+"Settings.desktop.panel.mapping.title" = "外观映射";
+"Settings.desktop.panel.selectDark" = "选择深色壁纸…";
+"Settings.desktop.panel.selectLight" = "选择浅色壁纸…";
+"Settings.desktop.panel.subtitle" = "为浅色和深色外观分别选择可选壁纸。";
+"Settings.desktop.panel.title" = "管理壁纸映射";
+"Settings.desktop.preview.dark" = "深色外观";
+"Settings.desktop.preview.empty" = "未配置";
+"Settings.desktop.preview.light" = "浅色外观";
+"Settings.desktop.preview.subtitle" = "预览系统切换外观时使用的壁纸资源。";
+"Settings.desktop.preview.title" = "当前壁纸映射";
+"Settings.desktop.subtitle" = "让桌面壁纸随外观切换而变化。";
+"Settings.desktop.title" = "桌面";
+
+"Settings.general.integrations.subtitle" = "管理开机启动、Touch Bar 开关与更新检查。";
+"Settings.general.integrations.title" = "集成";
+"Settings.general.loginItem" = "登录时启动";
+"Settings.general.menuBar.mode" = "交互方式";
+"Settings.general.menuBar.subtitle" = "选择菜单栏图标点击时的行为。";
+"Settings.general.menuBar.title" = "菜单栏";
+"Settings.general.shortcut.disabled" = "启用系统外观自动化时不可用。";
+"Settings.general.shortcut.enabled" = "可用于快速手动切换。";
+"Settings.general.shortcut.subtitle" = "在关闭系统自动化时保留专用快捷键。";
+"Settings.general.shortcut.title" = "快捷键";
+"Settings.general.title" = "通用";
+"Settings.general.touchBar" = "显示 Touch Bar 切换按钮";
+"Settings.general.updates.auto" = "自动检查更新";
+"Settings.general.updates.manual" = "检查更新…";
+
+"Settings.location.unknown" = "暂无缓存位置";
+"Settings.menuBarStyle.hidden" = "隐藏";
+"Settings.menuBarStyle.menu" = "显示菜单";
+"Settings.menuBarStyle.toggle" = "左键切换";
+
+"Settings.tab.about" = "关于";
+"Settings.tab.automation" = "自动化";
+"Settings.tab.desktop" = "桌面";
+"Settings.tab.general" = "通用";

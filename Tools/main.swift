@@ -34,7 +34,7 @@ extension Feed.Entry {
         <item>
         <title>\(title)</title>
         <pubDate>\(dateFormatter.string(from: updated))</pubDate>
-        <sparkle:minimumSystemVersion>10.14</sparkle:minimumSystemVersion>
+        <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
         <description><![CDATA[\(content)]]></description>
         <enclosure url="https://github.com/ApolloZhu/Dynamic-Dark-Mode/releases/download/\(version)/Dynamic_Dark_Mode-\(version).zip" sparkle:version="\(version)" type="application/octet-stream"/>
         </item>
