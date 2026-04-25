@@ -34,14 +34,18 @@ final class AppearanceMonitor: ObservableObject {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            self?.refresh()
+            MainActor.assumeIsolated {
+                self?.refresh()
+            }
         }
         appObserver = NotificationCenter.default.addObserver(
             forName: NSApplication.didBecomeActiveNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            self?.refresh()
+            MainActor.assumeIsolated {
+                self?.refresh()
+            }
         }
         refresh()
     }
@@ -60,10 +64,12 @@ extension AppleInterfaceStyle {
         SLSGetAppearanceThemeLegacy() ? .darkAqua : .aqua
     }
     
+    @MainActor
     static var current: AppleInterfaceStyle {
         AppearanceMonitor.shared.currentStyle
     }
     
+    @MainActor
     static var isDark: Bool {
         current == .darkAqua
     }

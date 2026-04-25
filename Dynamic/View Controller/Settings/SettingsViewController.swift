@@ -21,6 +21,7 @@ struct DynamicDarkModeApp: App {
 }
 
 final class SettingsViewController: NSObject {
+    @MainActor
     @objc public static func show() {
         WindowRouter.shared.showSettings()
     }
@@ -39,21 +40,27 @@ final class SettingsStore: ObservableObject {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            self?.objectWillChange.send()
+            MainActor.assumeIsolated {
+                self?.objectWillChange.send()
+            }
         })
         observers.append(center.addObserver(
             forName: .appearanceMonitorDidChange,
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            self?.objectWillChange.send()
+            MainActor.assumeIsolated {
+                self?.objectWillChange.send()
+            }
         })
         observers.append(center.addObserver(
             forName: NSApplication.didBecomeActiveNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            self?.objectWillChange.send()
+            MainActor.assumeIsolated {
+                self?.objectWillChange.send()
+            }
         })
     }
     

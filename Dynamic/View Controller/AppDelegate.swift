@@ -112,6 +112,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 }
 
+@MainActor
 func reopen() {
     WindowRouter.shared.reopen()
 }

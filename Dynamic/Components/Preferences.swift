@@ -43,12 +43,14 @@ extension Preferences {
 extension Preferences {
     private static var handles: [NSKeyValueObservation] = []
     
+    @MainActor
     public static func stopObserving() {
         StatusBarItem.only.stopObserving()
         handles.forEach { $0.invalidate() }
         handles = []
     }
     
+    @MainActor
     public static func startObserving() {
         stopObserving()
         StatusBarItem.only.startObserving()

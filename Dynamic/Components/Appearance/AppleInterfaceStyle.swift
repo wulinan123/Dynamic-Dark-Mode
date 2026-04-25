@@ -22,7 +22,7 @@ extension AppleInterfaceStyle {
     }
     
     func enable(then completion: CompletionHandler? = nil) {
-        guard AppleInterfaceStyle.current != self else { return }
+        guard AppleInterfaceStyle.systemCurrent != self else { return }
         switch self {
         case .aqua:
             AppleScript.disableDarkMode.execute(then: completion)
@@ -32,7 +32,7 @@ extension AppleInterfaceStyle {
     }
     
     static func updateWallpaper() {
-        guard let url = current == .darkAqua
+        guard let url = systemCurrent == .darkAqua
             ? preferences.darkDesktopURL
             : preferences.lightDesktopURL
             else { return }

@@ -24,6 +24,7 @@ public class AppleInterfaceStyleCoordinator: NSObject {
         }
     }
     
+    @MainActor
     @objc public func toggleOrShowInterface() {
         if preferences.AppleInterfaceStyleSwitchesAutomatically {
             reopen()

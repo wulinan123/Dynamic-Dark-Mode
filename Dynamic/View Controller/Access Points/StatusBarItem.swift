@@ -9,6 +9,7 @@
 import AppKit
 import Combine
 
+@MainActor
 public final class StatusBarItem {
     public static let only = StatusBarItem()
     private init() { }
@@ -101,24 +102,30 @@ public final class StatusBarItem {
         appearanceObservation = AppearanceMonitor.shared.$currentStyle
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
-                guard let self else { return }
-                self.statusBarItem?.button?.image = self.statusBarItemImage
+                MainActor.assumeIsolated {
+                    guard let self else { return }
+                    self.statusBarItem?.button?.image = self.statusBarItemImage
+                }
             }
         settingsStyleObservation = preferences.observe(
             \.rawSettingsStyle, options: [.initial, .new]
         ) { [weak self] _, change in
-            guard let self = self else { return }
-            switch preferences.settingsStyle {
-            case .menu:
-                self.createStatusBarItemIfNecessary()
-                self.statusBarItem?.menu = self.buildMenu()
-            case .rightClick:
-                self.createStatusBarItemIfNecessary()
-                self.statusBarItem?.menu = nil
-            case .hidden:
-                guard let statusBarItem = self.statusBarItem else { return }
-                NSStatusBar.system.removeStatusItem(statusBarItem)
-                self.statusBarItem = nil
+            DispatchQueue.main.async {
+                MainActor.assumeIsolated {
+                    guard let self else { return }
+                    switch preferences.settingsStyle {
+                    case .menu:
+                        self.createStatusBarItemIfNecessary()
+                        self.statusBarItem?.menu = self.buildMenu()
+                    case .rightClick:
+                        self.createStatusBarItemIfNecessary()
+                        self.statusBarItem?.menu = nil
+                    case .hidden:
+                        guard let statusBarItem = self.statusBarItem else { return }
+                        NSStatusBar.system.removeStatusItem(statusBarItem)
+                        self.statusBarItem = nil
+                    }
+                }
             }
         }
     }

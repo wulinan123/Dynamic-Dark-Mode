@@ -76,13 +76,17 @@ extension AppleScript {
         then completion: CompletionHandler?
     ) {
         let refresh = {
-            AppearanceMonitor.shared.refresh()
-            completion?()
-            application?.activate(options: [.activateIgnoringOtherApps])
+            MainActor.assumeIsolated {
+                AppearanceMonitor.shared.refresh()
+                completion?()
+                application?.activate(options: [.activateIgnoringOtherApps])
+            }
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.12, execute: refresh)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
-            AppearanceMonitor.shared.refresh()
+            MainActor.assumeIsolated {
+                AppearanceMonitor.shared.refresh()
+            }
         }
     }
 }

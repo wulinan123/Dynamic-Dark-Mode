@@ -64,7 +64,7 @@ final class ScreenBrightnessObserver: NSObject {
     
     private func _updateForBrightnessChange() {
         let newValue = suggestedMode
-        guard AppleInterfaceStyle.current != newValue else { return }
+        guard AppleInterfaceStyle.systemCurrent != newValue else { return }
         newValue.enable()
     }
 

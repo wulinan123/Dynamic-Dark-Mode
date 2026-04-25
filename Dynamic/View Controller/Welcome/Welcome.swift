@@ -13,8 +13,8 @@ import SwiftUI
 final class WindowRouter: NSObject, NSWindowDelegate {
     static let shared = WindowRouter()
     
-    static let onboardingWindowID = NSUserInterfaceItemIdentifier("io.github.apollozhu.dynamic.onboarding")
-    static let settingsWindowID = NSUserInterfaceItemIdentifier("io.github.apollozhu.dynamic.settings")
+    nonisolated static let onboardingWindowID = NSUserInterfaceItemIdentifier("io.github.apollozhu.dynamic.onboarding")
+    nonisolated static let settingsWindowID = NSUserInterfaceItemIdentifier("io.github.apollozhu.dynamic.settings")
     
     private var onboardingWindowController: NSWindowController?
     
@@ -105,6 +105,7 @@ final class WindowRouter: NSObject, NSWindowDelegate {
     }
 }
 
+@MainActor
 final class Welcome: NSWindowController {
     static func show() {
         WindowRouter.shared.showOnboarding()
@@ -160,7 +161,7 @@ struct OnboardingFlowView: View {
         case .welcome:
             WelcomeStepView(
                 continueAction: model.continueFromWelcome,
-                skipAction: WindowRouter.shared.finishOnboarding
+                skipAction: model.finishOnboarding
             )
         case .automation:
             AutomationPermissionStepView(
