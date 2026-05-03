@@ -96,15 +96,13 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             build | tee build/xcodebuild.log
 
-      - name: Package build outputs
+      - name: Package build outputs as DMG
         if: success()
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p build/artifacts
-          tar -czf "build/artifacts/Dynamic-Dark-Mode-${BUILD_CONFIGURATION}.tgz" \
-            -C "$DERIVED_DATA_PATH/Build/Products" \
-            "$BUILD_CONFIGURATION"
+          hdiutil create -volname "Dynamic-Dark-Mode" -srcfolder "$DERIVED_DATA_PATH/Build/Products/$BUILD_CONFIGURATION/Dynamic Dark Mode.app" -ov -format UDZO "build/artifacts/Dynamic-Dark-Mode-${BUILD_CONFIGURATION}.dmg"
 
       - name: Upload build artifacts
         if: always()
@@ -114,21 +112,20 @@ jobs:
           path: |
             build/xcodebuild.log
             build/DynamicDarkMode.xcresult
-            build/artifacts/Dynamic-Dark-Mode-${{ env.BUILD_CONFIGURATION }}.tgz
+            build/artifacts/Dynamic-Dark-Mode-${{ env.BUILD_CONFIGURATION }}.dmg
           if-no-files-found: warn
           retention-days: 14
 
       - name: Create GitHub Release
-        if: startsWith(github.ref, 'refs/tags/') && success()
+        if: success()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
           set -euo pipefail
-          RELEASE_TAG=${GITHUB_REF#refs/tags/}
-          # Define release title based on tag
+          # We create a release named after the current ref or run id
+          RELEASE_TAG="v1.6.0-run${GITHUB_RUN_NUMBER}"
           RELEASE_TITLE="Release ${RELEASE_TAG}"
           echo "Releasing $RELEASE_TAG"
-          # Check if release exists, if not create it, else upload to it or create draft
-          gh release view "$RELEASE_TAG" || gh release create "$RELEASE_TAG" --title "$RELEASE_TITLE" --notes "Automated release of $RELEASE_TAG for Dynamic Dark Mode"
-          gh release upload "$RELEASE_TAG" "build/artifacts/Dynamic-Dark-Mode-${BUILD_CONFIGURATION}.tgz" --clobber
+          gh release view "$RELEASE_TAG" || gh release create "$RELEASE_TAG" --title "$RELEASE_TITLE" --notes "Automated release from latest build" --target "${GITHUB_REF_NAME}"
+          gh release upload "$RELEASE_TAG" "build/artifacts/Dynamic-Dark-Mode-${BUILD_CONFIGURATION}.dmg" --clobber
