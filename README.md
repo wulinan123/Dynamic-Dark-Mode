@@ -24,13 +24,13 @@ brew install --cask dynamic-dark-mode
 ### Direct Download
 
 <details>
-  <summary><a href="https://github.com/ApolloZhu/Dynamic-Dark-Mode/releases/latest">Latest Release</a></summary>
+  <summary><a href="https://github.com/wulinan123/Dynamic-Dark-Mode/releases/latest">Latest Release</a></summary>
 
   Additionally, you may also download:
 
   <ul>
     <li><a href="https://rebrand.ly/ddm-nightly" target="_blank">Nightly Build</a></li>
-    <li><a href="https://github.com/ApolloZhu/Dynamic-Dark-Mode/releases">Earlier Releases</a></li>
+    <li><a href="https://github.com/wulinan123/Dynamic-Dark-Mode/releases">Earlier Releases</a></li>
     <li><a href="https://rebrand.ly/ddm-all" target="_blank">Earlier Builds</a></li>
   </ul>
 
@@ -40,7 +40,7 @@ brew install --cask dynamic-dark-mode
 
 ```
 Dynamic Dark Mode - the smart, automatic Dark Mode toggle for macOS
-Copyright (C) 2018-2021 Zhiyu Zhu (@ApolloZhu)
+Copyright (C) 2018-2021 Zhiyu Zhu (@wulinan123)
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -88,7 +88,7 @@ This is not quite what you are looking for? Here's a non-comprehensive list of o
     document.getElementsByClassName("project-name")[0].innerHTML = "Dynamic Dark Mode";
     document.getElementById("dynamic-dark-mode").style.display="none";
     pageHeader = document.getElementsByClassName("page-header")[0];
-    pageHeader.insertAdjacentHTML('beforeend', '<a href="https://github.com/ApolloZhu/Dynamic-Dark-Mode/releases/latest" class="btn">Download</a>');
+    pageHeader.insertAdjacentHTML('beforeend', '<a href="https://github.com/wulinan123/Dynamic-Dark-Mode/releases/latest" class="btn">Download</a>');
     pageHeader.insertAdjacentHTML('beforeend', '<a href="#install" class="btn">Homebrew Cask</a>');
     productHunt = document.getElementById("product-hunt")
     pageHeader.append(productHunt)

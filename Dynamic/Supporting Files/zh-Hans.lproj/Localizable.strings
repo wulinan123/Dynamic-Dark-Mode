@@ -40,12 +40,6 @@
 /* Menu section for appearance automation settings */
 "Menu.automation" = "自动化";
 
-/* Menu section for brightness settings */
-"Menu.brightness" = "亮度";
-
-/* Menu item to open compact brightness settings */
-"Menu.brightnessDetails" = "亮度详细设置…";
-
 /* Menu section for desktop wallpaper settings */
 "Menu.desktop" = "桌面";
 
@@ -63,12 +57,6 @@
 
 /* Indicates either enable or disable opens at login failed. */
 "Preferences.opensAtLogin.failed" = "未能更新“开机自启动”设置";
-
-/* Notification text for bug report */
-"ScreenBrightnessObserver.startObserving.failed" = "无法根据屏幕亮度自动切换深色模式。";
-
-/* For touch bar button title */
-"SettingsViewController.autoAdjustThreshold" = "自动切换阀值";
 
 /* For touch bar button title */
 "SettingsViewController.scheduleMode" = "定时选项";
@@ -105,7 +93,7 @@
 "Onboarding.automation.title" = "允许自动深色模式切换系统外观。";
 "Onboarding.eyebrow" = "自动深色模式";
 "Onboarding.location.eyebrow" = "定位权限";
-"Onboarding.location.message" = "定位仅用于计算基于日出日落的切换时间。若跳过，仍可使用自定义时间和亮度自动化。";
+"Onboarding.location.message" = "定位仅用于计算基于日出日落的切换时间。若跳过，仍可使用自定义时间。";
 "Onboarding.location.title" = "使用你的位置计算日出日落切换。";
 "Onboarding.permission.checking" = "正在检查权限…";
 "Onboarding.step.automation" = "自动化";
@@ -124,11 +112,6 @@
 "Settings.about.subtitle" = "项目信息、致谢、反馈与维护操作。";
 "Settings.about.title" = "关于";
 
-"Settings.automation.brightness.disableAtNight" = "在计划深色时段暂停亮度切换";
-"Settings.automation.brightness.subtitle" = "当显示器支持亮度变化时，自动根据环境亮度调整外观。";
-"Settings.automation.brightness.threshold" = "阈值：%.0f%%";
-"Settings.automation.brightness.title" = "亮度";
-"Settings.automation.brightness.toggle" = "根据亮度自动切换外观";
 "Settings.automation.location" = "最近位置";
 "Settings.automation.schedule.from" = "开始";
 "Settings.automation.schedule.mode" = "定时模式";
@@ -136,7 +119,7 @@
 "Settings.automation.schedule.title" = "定时";
 "Settings.automation.schedule.to" = "结束";
 "Settings.automation.schedule.toggle" = "启用定时切换";
-"Settings.automation.subtitle" = "组合系统自动化、定时、亮度与日光规则。";
+"Settings.automation.subtitle" = "组合系统自动化、定时与日光规则。";
 "Settings.automation.system.subtitle" = "启用后由 macOS 控制外观切换，手动切换将改为打开设置。";
 "Settings.automation.system.title" = "系统外观自动化";
 "Settings.automation.system.toggle" = "让 macOS 自动切换外观";
@@ -169,9 +152,8 @@
 "Settings.general.menuBar.mode" = "交互方式";
 "Settings.general.menuBar.subtitle" = "选择菜单栏图标点击时的行为。";
 "Settings.general.menuBar.title" = "菜单栏";
-"Settings.general.shortcut.disabled" = "启用系统外观自动化时不可用。";
 "Settings.general.shortcut.enabled" = "可用于快速手动切换。";
-"Settings.general.shortcut.subtitle" = "在关闭系统自动化时保留专用快捷键。";
+"Settings.general.shortcut.subtitle" = "保留专用快捷键以快速切换外观。";
 "Settings.general.shortcut.title" = "快捷键";
 "Settings.general.title" = "通用";
 "Settings.general.touchBar" = "显示 Touch Bar 切换按钮";
@@ -182,7 +164,6 @@
 "Settings.legacy.done" = "保存";
 "Settings.legacy.help" = "打开项目帮助";
 "Settings.legacy.other" = "其他";
-"Settings.legacy.threshold" = "阈值";
 "Settings.legacy.title" = "自动深色模式设置";
 "Settings.legacy.touchBar" = "触控栏";
 

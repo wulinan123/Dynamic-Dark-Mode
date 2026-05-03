@@ -44,10 +44,8 @@
 "Preferences.opensAtLogin.failed" = "Не удалось обновить настройку \"Запустить при входе в систему\"";
 
 /* Notification text for bug report */
-"ScreenBrightnessObserver.startObserving.failed" = "Cannot observe screen brightness change.";
 
 /* For touch bar button title */
-"SettingsViewController.autoAdjustThreshold" = "Автонастройка порога";
 
 /* For touch bar button title */
 "SettingsViewController.scheduleMode" = "Расписание";

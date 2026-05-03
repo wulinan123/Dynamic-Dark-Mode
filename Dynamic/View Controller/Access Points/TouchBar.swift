@@ -9,7 +9,7 @@
 import Cocoa
 
 enum TouchBar {
-    private static let itemID = NSTouchBarItem.Identifier(rawValue: "io.github.apollozhu.Dynamic.switch")
+    private static let itemID = NSTouchBarItem.Identifier(rawValue: "io.github.wulinan123.Dynamic.switch")
     
     private static let item: NSTouchBarItem = {
         let item = NSCustomTouchBarItem(identifier: itemID)

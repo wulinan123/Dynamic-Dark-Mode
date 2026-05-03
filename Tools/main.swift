@@ -10,7 +10,7 @@ import Foundation
 
 import XMLCoder
 
-let releasesURL = "https://github.com/ApolloZhu/Dynamic-Dark-Mode/releases.atom"
+let releasesURL = "https://github.com/wulinan123/Dynamic-Dark-Mode/releases.atom"
 
 struct Feed: Codable {
     struct Entry: Codable {
@@ -36,7 +36,7 @@ extension Feed.Entry {
         <pubDate>\(dateFormatter.string(from: updated))</pubDate>
         <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
         <description><![CDATA[\(content)]]></description>
-        <enclosure url="https://github.com/ApolloZhu/Dynamic-Dark-Mode/releases/download/\(version)/Dynamic_Dark_Mode-\(version).zip" sparkle:version="\(version)" type="application/octet-stream"/>
+        <enclosure url="https://github.com/wulinan123/Dynamic-Dark-Mode/releases/download/\(version)/Dynamic_Dark_Mode-\(version).zip" sparkle:version="\(version)" type="application/octet-stream"/>
         </item>
         """
     }
@@ -59,7 +59,7 @@ URLSession.shared.dataTask(with: URL(string: releasesURL)!) { data, _, _ in
     <channel>
     <title>Dynamic Dark Mode</title>
     <link>
-    https://apollozhu.github.io/Dynamic-Dark-Mode/appcast.xml
+    https://wulinan123.github.io/Dynamic-Dark-Mode/appcast.xml
     </link>
     <language>en</language>
     \(items)

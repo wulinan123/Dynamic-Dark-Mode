@@ -35,10 +35,8 @@
 "Preferences.opensAtLogin.failed" = "Failed to update \"opens at login\" settings";
 
 /* Notification text for bug report */
-"ScreenBrightnessObserver.startObserving.failed" = "Cannot observe screen brightness change.";
 
 /* For touch bar button title */
-"SettingsViewController.autoAdjustThreshold" = "Ĝustigi la Sojlon Aŭtomatike";
 
 /* For touch bar button title */
 "SettingsViewController.scheduleMode" = "Tempoplana Modo";

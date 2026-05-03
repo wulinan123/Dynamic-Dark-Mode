@@ -19,7 +19,7 @@ public final class Scheduler: NSObject {
         task = nil
     }
     
-    @objc public func schedule(startBrightnessObserverOnFailure: Bool = false) {
+    @objc public func schedule() {
         if preferences.AppleInterfaceStyleSwitchesAutomatically { return }
         func processLocation(_ result: Location) {
             switch result {
@@ -29,8 +29,6 @@ public final class Scheduler: NSObject {
                 scheduleAtCachedLocation(location)
             case .failed(let error):
                 Location.alertNotAvailable(dueTo: error)
-                guard startBrightnessObserverOnFailure else { return }
-                ScreenBrightnessObserver.shared.startObserving()
             }
         }
         LocationManager.serial.fetch(then: processLocation)
@@ -40,7 +38,6 @@ public final class Scheduler: NSObject {
         UserNotification.removeAll()
         let decision = mode(atLocation: location?.coordinate)
         decision.style.enable()
-        updateScreenBrightnessObserver(forAppearance: decision.style)
         guard let date = decision.date else { return }
         task = Plan.at(date).do { [weak self] in self?.schedule() }
     }
@@ -62,26 +59,13 @@ public final class Scheduler: NSObject {
         return true
     }
     
-    private func updateScreenBrightnessObserver(forAppearance style: AppleInterfaceStyle) {
-        if preferences.adjustForBrightness,
-            style == .aqua || !preferences.disableAdjustForBrightnessWhenScheduledDarkModeOn {
-            // no initial update because we are using the schedule
-            ScreenBrightnessObserver.shared.startObserving(withInitialUpdate: false)
-        } else  {
-            // don't observe brightness at night if disabled
-            ScreenBrightnessObserver.shared.stopObserving()
-        }
-    }
-    
     // Mark: - Mode
     
     public func updateSchedule(then process: @escaping Handler<Result<Void, Error>>) {
         if preferences.AppleInterfaceStyleSwitchesAutomatically {
             return process(.failure(AnError(errorDescription: "AppleInterfaceStyleSwitchesAutomatically")))
         }
-        getCurrentMode { [weak self] in process($0.map {
-            self?.updateScreenBrightnessObserver(forAppearance: $0.style)
-        }) }
+        getCurrentMode { process($0.map { _ in }) }
     }
     
     private func getCurrentMode(then process: @escaping Handler<Result<Mode, Error>>) {

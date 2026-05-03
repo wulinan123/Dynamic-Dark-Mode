@@ -106,5 +106,7 @@ struct ShortcutRecorderView: NSViewRepresentable {
         return view
     }
     
-    func updateNSView(_ nsView: MASShortcutView, context: Context) { }
+    func updateNSView(_ nsView: MASShortcutView, context: Context) {
+        nsView.associatedUserDefaultsKey = Preferences.toggleShortcutKey
+    }
 }

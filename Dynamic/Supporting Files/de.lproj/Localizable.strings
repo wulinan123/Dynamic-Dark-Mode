@@ -28,8 +28,6 @@
 /* Action item to toggle in from menu bar */
 "Menu.toggle" = "Dark Mode umschalten";
 
-/* AutoAdjustThreshold */
-"SettingsViewController.autoAdjustThreshold" = "Schwelle automatisch einstellen";
 
 /* ScheduleMode */
 "SettingsViewController.scheduleMode" = "Geplanter Modus";

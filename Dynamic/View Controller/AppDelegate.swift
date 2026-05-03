@@ -54,7 +54,6 @@ final class AppBootstrapper {
         Preferences.setupDefaultsForNewFeatures()
         Shortcut.startObserving()
         if preferences.AppleInterfaceStyleSwitchesAutomatically {
-            Shortcut.stopObserving()
             preferences.scheduleZenithType = .system
         }
         Preferences.startObserving()
@@ -67,7 +66,6 @@ final class AppBootstrapper {
         Preferences.stopObserving()
         AppleInterfaceStyle.Coordinator.tearDown()
         Scheduler.shared.cancel()
-        ScreenBrightnessObserver.shared.stopObserving()
     }
     
     func resetForOnboarding() {

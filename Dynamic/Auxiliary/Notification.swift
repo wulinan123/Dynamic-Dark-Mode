@@ -89,9 +89,9 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         case .useCache:
             break
         case .reportBug:
-            openURL("https://github.com/ApolloZhu/Dynamic-Dark-Mode/issues/new")
+            openURL("https://github.com/wulinan123/Dynamic-Dark-Mode/issues/new")
         case .issue(let id):
-            openURL("https://github.com/ApolloZhu/Dynamic-Dark-Mode/issues/\(id)")
+            openURL("https://github.com/wulinan123/Dynamic-Dark-Mode/issues/\(id)")
         }
     }
 }

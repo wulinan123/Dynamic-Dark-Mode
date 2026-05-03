@@ -117,3 +117,18 @@ jobs:
             build/artifacts/Dynamic-Dark-Mode-${{ env.BUILD_CONFIGURATION }}.tgz
           if-no-files-found: warn
           retention-days: 14
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/') && success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          RELEASE_TAG=${GITHUB_REF#refs/tags/}
+          # Define release title based on tag
+          RELEASE_TITLE="Release ${RELEASE_TAG}"
+          echo "Releasing $RELEASE_TAG"
+          # Check if release exists, if not create it, else upload to it or create draft
+          gh release view "$RELEASE_TAG" || gh release create "$RELEASE_TAG" --title "$RELEASE_TITLE" --notes "Automated release of $RELEASE_TAG for Dynamic Dark Mode"
+          gh release upload "$RELEASE_TAG" "build/artifacts/Dynamic-Dark-Mode-${BUILD_CONFIGURATION}.tgz" --clobber

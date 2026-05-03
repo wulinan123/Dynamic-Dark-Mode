@@ -14,8 +14,12 @@ enum Shortcut {
         setDefaultToggleShortcut()
         MASShortcutBinder.shared()?.bindShortcut(
             withDefaultsKey: Preferences.toggleShortcutKey,
-            toAction: AppleInterfaceStyle.Coordinator.toggleOrShowInterface
-        ) // will, it will never show interface since it's disabled for that
+            toAction: {
+                Task { @MainActor in
+                    AppleInterfaceStyle.Coordinator.toggleOrShowInterface()
+                }
+            }
+        )
     }
     
     public static func stopObserving() {

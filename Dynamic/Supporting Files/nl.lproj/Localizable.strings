@@ -35,10 +35,8 @@
 "Preferences.opensAtLogin.failed" = "Kan de automatisch opstarten-instellingen niet aanpassen";
 
 /* Notification text for bug report */
-"ScreenBrightnessObserver.startObserving.failed" = "Kan de schermhelderheidsaanpassing niet opvragen";
 
 /* For touch bar button title */
-"SettingsViewController.autoAdjustThreshold" = "Drempelw. automatisch aanpassen";
 
 /* For touch bar button title */
 "SettingsViewController.scheduleMode" = "Planning";

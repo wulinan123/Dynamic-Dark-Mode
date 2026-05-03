@@ -28,8 +28,6 @@
 /* Action item to toggle in from menu bar */
 "Menu.toggle" = "Beralih ke Mode Gelap";
 
-/* AutoAdjustThreshold */
-"SettingsViewController.autoAdjustThreshold" = "Pengaturan Batas Otomatis";
 
 /* ScheduleMode */
 "SettingsViewController.scheduleMode" = "Modus Jadwal";

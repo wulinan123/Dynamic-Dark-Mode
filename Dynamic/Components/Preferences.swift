@@ -16,8 +16,6 @@ public let preferences = NSUserDefaultsController.shared.defaults
 
 extension Preferences {
     public static func setupAsSuggested() {
-        preferences.adjustForBrightness = true
-        preferences.brightnessThreshold = 0.5
         preferences.settingsStyle = .menu
         if preferences.AppleInterfaceStyleSwitchesAutomatically {
             preferences.scheduleZenithType = .system
@@ -31,9 +29,6 @@ extension Preferences {
     }
     
     public static func setupDefaultsForNewFeatures() {
-        if !preferences.exists(\.disableAdjustForBrightnessWhenScheduledDarkModeOn) {
-            preferences.disableAdjustForBrightnessWhenScheduledDarkModeOn = true
-        }
         if !preferences.exists(\.showToggleInTouchBar) {
             preferences.showToggleInTouchBar = true
         }
@@ -65,12 +60,6 @@ extension Preferences {
             { _, change in changeHandler(change) }
         }
         handles = [
-            observe(\.adjustForBrightness) { change in
-                AppleInterfaceStyle.Coordinator.setup()
-            },
-            observe(\.disableAdjustForBrightnessWhenScheduledDarkModeOn) { _ in
-                AppleInterfaceStyle.Coordinator.setup()
-            },
             observe(\.scheduled) { change in
                 if change.newValue == true {
                     if preferences.AppleInterfaceStyleSwitchesAutomatically { return }
@@ -118,7 +107,7 @@ extension Preferences {
             },
             observe(\.opensAtLogin) { change in
                 guard !SMLoginItemSetEnabled(
-                    "io.github.apollozhu.Dynamic.Launcher" as CFString,
+                    "io.github.wulinan123.Dynamic.Launcher" as CFString,
                     change.newValue ?? true
                 ) else { return }
                 remindReportingBug(NSLocalizedString(
@@ -131,8 +120,6 @@ extension Preferences {
         handles.append(observe(\.AppleInterfaceStyleSwitchesAutomatically) { change in
             if change.newValue == true {
                 preferences.scheduleZenithType = .system
-                ScreenBrightnessObserver.shared.stopObserving()
-                Shortcut.stopObserving()
             } else {
                 Shortcut.startObserving()
                 if preferences.scheduleZenithType == .system {
@@ -178,38 +165,6 @@ extension Preferences {
 // MARK: - Preferences
 
 extension Preferences {
-    @objc dynamic var adjustForBrightness: Bool {
-        get {
-            return preferences.bool(forKey: #function)
-        }
-        set {
-            setPreferred(to: newValue)
-        }
-    }
-    
-    @objc dynamic var disableAdjustForBrightnessWhenScheduledDarkModeOn: Bool {
-        get {
-            return preferences.bool(forKey: #function)
-        }
-        set {
-            setPreferred(to: newValue)
-        }
-    }
-    
-    @objc dynamic var brightnessThreshold: Float {
-        get {
-            if let raw = preferences.value(forKey: #function) as? Double {
-                return Float(raw / 100)
-            } else {
-                setPreferred(to: 50.0)
-                return 0.5
-            }
-        }
-        set {
-            setPreferred(to: Double(newValue) * 100)
-        }
-    }
-    
     @objc dynamic var scheduled: Bool {
         get {
             return preferences.bool(forKey: #function)

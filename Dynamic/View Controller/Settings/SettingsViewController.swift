@@ -85,14 +85,6 @@ final class SettingsStore: ObservableObject {
         }
     }
 
-    var statusBarStyle: StatusBarItem.Style {
-        get { preferences.settingsStyle }
-        set {
-            preferences.settingsStyle = newValue
-            objectWillChange.send()
-        }
-    }
-
     var systemAutomaticAppearance: Bool {
         get { preferences.AppleInterfaceStyleSwitchesAutomatically }
         set {
@@ -129,30 +121,6 @@ final class SettingsStore: ObservableObject {
         get { preferences.scheduleEnd }
         set {
             preferences.scheduleEnd = newValue
-            objectWillChange.send()
-        }
-    }
-
-    var adjustForBrightness: Bool {
-        get { preferences.adjustForBrightness }
-        set {
-            preferences.adjustForBrightness = newValue
-            objectWillChange.send()
-        }
-    }
-
-    var disableAdjustForBrightnessWhenScheduledDarkModeOn: Bool {
-        get { preferences.disableAdjustForBrightnessWhenScheduledDarkModeOn }
-        set {
-            preferences.disableAdjustForBrightnessWhenScheduledDarkModeOn = newValue
-            objectWillChange.send()
-        }
-    }
-
-    var brightnessThreshold: Double {
-        get { Double(preferences.brightnessThreshold) }
-        set {
-            preferences.brightnessThreshold = Float(newValue)
             objectWillChange.send()
         }
     }
@@ -265,15 +233,15 @@ final class SettingsStore: ObservableObject {
     }
 
     func openProject() {
-        openURL("https://github.com/ApolloZhu/Dynamic-Dark-Mode")
+        openURL("https://github.com/wulinan123/Dynamic-Dark-Mode")
     }
 
     func openLicense() {
-        openURL("https://github.com/ApolloZhu/Dynamic-Dark-Mode/blob/master/LICENSE")
+        openURL("https://github.com/wulinan123/Dynamic-Dark-Mode/blob/master/LICENSE")
     }
 
     func openIssues() {
-        openURL("https://github.com/ApolloZhu/Dynamic-Dark-Mode/issues/new")
+        openURL("https://github.com/wulinan123/Dynamic-Dark-Mode/issues/new")
     }
 
     func resetSetup() {
@@ -323,19 +291,12 @@ struct CompactSettingsPopoverView: View {
                     )
                 ) {
                     ShortcutRecorderView()
-                        .frame(height: 32)
-                        .disabled(store.usesSystemAutomation)
-                    Text(store.usesSystemAutomation
-                        ? NSLocalizedString(
-                            "Settings.general.shortcut.disabled",
-                            value: "Disabled while system appearance automation is enabled.",
-                            comment: "Shortcut disabled note."
-                        )
-                        : NSLocalizedString(
-                            "Settings.general.shortcut.enabled",
-                            value: "Available for instant manual switching.",
-                            comment: "Shortcut enabled note."
-                        )
+                        .frame(maxWidth: .infinity, minHeight: 32)
+                    Text(NSLocalizedString(
+                        "Settings.general.shortcut.enabled",
+                        value: "Available for instant manual switching.",
+                        comment: "Shortcut enabled note."
+                    )
                     )
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -407,34 +368,6 @@ struct CompactSettingsPopoverView: View {
                         )
                         .disabled(store.usesSystemAutomation || !store.scheduled)
                     }
-                }
-
-                CompactSettingsSection(
-                    title: NSLocalizedString(
-                        "Settings.automation.brightness.title",
-                        value: "Brightness",
-                        comment: "Brightness section title."
-                    )
-                ) {
-                    HStack {
-                        Text(String(
-                            format: NSLocalizedString(
-                                "Settings.automation.brightness.threshold",
-                                value: "Threshold: %.0f%%",
-                                comment: "Brightness threshold label."
-                            ),
-                            store.brightnessThreshold * 100
-                        ))
-                        Spacer()
-                    }
-                    Slider(
-                        value: Binding(
-                            get: { store.brightnessThreshold },
-                            set: { store.brightnessThreshold = $0 }
-                        ),
-                        in: 0...1
-                    )
-                    .disabled(store.usesSystemAutomation || !store.adjustForBrightness)
                 }
 
                 CompactSettingsSection(
@@ -588,67 +521,6 @@ private struct LegacySettingsPanel: View {
                     ) {
                         ShortcutRecorderView()
                             .frame(height: 36)
-                    }
-
-                    LegacySettingsRow(
-                        NSLocalizedString(
-                            "Settings.legacy.automation",
-                            value: "Automation",
-                            comment: "Legacy automation row title."
-                        )
-                    ) {
-                        Toggle(
-                            NSLocalizedString(
-                                "Settings.automation.brightness.toggle",
-                                value: "Adjust appearance based on brightness",
-                                comment: "Brightness toggle."
-                            ),
-                            isOn: Binding(
-                                get: { store.adjustForBrightness },
-                                set: { store.adjustForBrightness = $0 }
-                            )
-                        )
-                        .disabled(store.usesSystemAutomation)
-                    }
-
-                    LegacySettingsRow(
-                        NSLocalizedString(
-                            "Settings.legacy.threshold",
-                            value: "Threshold",
-                            comment: "Brightness threshold row title."
-                        )
-                    ) {
-                        HStack(spacing: 18) {
-                            Image(systemName: "moon.fill")
-                                .font(.title2)
-                            Slider(
-                                value: Binding(
-                                    get: { store.brightnessThreshold },
-                                    set: { store.brightnessThreshold = $0 }
-                                ),
-                                in: 0...1
-                            )
-                            Image(systemName: "sun.max")
-                                .font(.title2)
-                        }
-                        .symbolRenderingMode(.hierarchical)
-                        .foregroundStyle(.primary)
-                        .disabled(store.usesSystemAutomation || !store.adjustForBrightness)
-                    }
-
-                    LegacySettingsRow("") {
-                        Toggle(
-                            NSLocalizedString(
-                                "Settings.automation.brightness.disableAtNight",
-                                value: "Pause brightness switching during scheduled dark mode",
-                                comment: "Disable brightness switching during night schedule."
-                            ),
-                            isOn: Binding(
-                                get: { store.disableAdjustForBrightnessWhenScheduledDarkModeOn },
-                                set: { store.disableAdjustForBrightnessWhenScheduledDarkModeOn = $0 }
-                            )
-                        )
-                        .disabled(store.usesSystemAutomation || !store.adjustForBrightness || !store.scheduled)
                     }
 
                     LegacySettingsRow(
@@ -985,28 +857,21 @@ struct GeneralSettingsTab: View {
                 ),
                 subtitle: NSLocalizedString(
                     "Settings.general.shortcut.subtitle",
-                    value: "Keep a dedicated shortcut for manual switching when system automation is off.",
+                    value: "Keep a dedicated shortcut for fast appearance switching.",
                     comment: "Shortcut section subtitle."
                 )
             ) {
                 HStack(alignment: .center, spacing: 16) {
                     ShortcutRecorderView()
                         .frame(width: 220, height: 34)
-                    Text(store.usesSystemAutomation
-                        ? NSLocalizedString(
-                            "Settings.general.shortcut.disabled",
-                            value: "Disabled while system appearance automation is enabled.",
-                            comment: "Shortcut disabled note."
-                        )
-                        : NSLocalizedString(
-                            "Settings.general.shortcut.enabled",
-                            value: "Available for instant manual switching.",
-                            comment: "Shortcut enabled note."
-                        )
+                    Text(NSLocalizedString(
+                        "Settings.general.shortcut.enabled",
+                        value: "Available for instant manual switching.",
+                        comment: "Shortcut enabled note."
+                    )
                     )
                     .foregroundStyle(.secondary)
                 }
-                .disabled(store.usesSystemAutomation)
             }
 
             SettingsCard(
@@ -1082,7 +947,7 @@ struct AutomationSettingsTab: View {
             comment: "Automation tab heading."
         ), subtitle: NSLocalizedString(
             "Settings.automation.subtitle",
-            value: "Blend system automation, schedules, brightness, and daylight-based timing.",
+            value: "Blend system automation, schedules, and daylight-based timing.",
             comment: "Automation tab subtitle."
         )) {
             SettingsCard(
@@ -1192,66 +1057,6 @@ struct AutomationSettingsTab: View {
                     )
                     .foregroundStyle(.secondary)
                 }
-            }
-
-            SettingsCard(
-                title: NSLocalizedString(
-                    "Settings.automation.brightness.title",
-                    value: "Brightness",
-                    comment: "Brightness section title."
-                ),
-                subtitle: NSLocalizedString(
-                    "Settings.automation.brightness.subtitle",
-                    value: "React to ambient changes when your display supports automatic brightness updates.",
-                    comment: "Brightness section subtitle."
-                )
-            ) {
-                Toggle(
-                    NSLocalizedString(
-                        "Settings.automation.brightness.toggle",
-                        value: "Adjust appearance based on brightness",
-                        comment: "Brightness toggle."
-                    ),
-                    isOn: Binding(
-                        get: { store.adjustForBrightness },
-                        set: { store.adjustForBrightness = $0 }
-                    )
-                )
-                .disabled(store.usesSystemAutomation)
-
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(
-                        String(
-                            format: NSLocalizedString(
-                                "Settings.automation.brightness.threshold",
-                                value: "Threshold: %.0f%%",
-                                comment: "Brightness threshold label."
-                            ),
-                            store.brightnessThreshold * 100
-                        )
-                    )
-                    Slider(
-                        value: Binding(
-                            get: { store.brightnessThreshold },
-                            set: { store.brightnessThreshold = $0 }
-                        ),
-                        in: 0...1
-                    )
-                }
-                .disabled(store.usesSystemAutomation || !store.adjustForBrightness)
-
-                Toggle(
-                    NSLocalizedString(
-                        "Settings.automation.brightness.disableAtNight",
-                        value: "Pause brightness switching during scheduled dark mode",
-                        comment: "Disable brightness switching during night schedule."
-                    ),
-                    isOn: Binding(
-                        get: { store.disableAdjustForBrightnessWhenScheduledDarkModeOn },
-                        set: { store.disableAdjustForBrightnessWhenScheduledDarkModeOn = $0 }
-                    )
-                )
-                .disabled(store.usesSystemAutomation || !store.adjustForBrightness || !store.scheduled)
             }
         }
     }

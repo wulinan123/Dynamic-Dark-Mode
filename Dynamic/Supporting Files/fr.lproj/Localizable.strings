@@ -41,10 +41,8 @@
 "Preferences.opensAtLogin.failed" = "Impossible de mettre à jour les paramètres \"Ouvrir au démarrage\"";
 
 /* Notification text for bug report */
-"ScreenBrightnessObserver.startObserving.failed" = "Impossible d'observer le changement de luminosité de l'écran.";
 
 /* For touch bar button title */
-"SettingsViewController.autoAdjustThreshold" = "Ajustement automatique du seuil";
 
 /* For touch bar button title */
 "SettingsViewController.scheduleMode" = "Mode planifié";

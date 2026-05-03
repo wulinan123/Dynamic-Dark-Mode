@@ -8,7 +8,7 @@
 
 import Cocoa
 
-let id = "io.github.apollozhu.Dynamic"
+let id = "io.github.wulinan123.Dynamic"
 
 var noInstanceRunning: Bool {
     return NSRunningApplication

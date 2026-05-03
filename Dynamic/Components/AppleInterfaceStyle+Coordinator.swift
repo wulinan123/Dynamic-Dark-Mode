@@ -12,7 +12,7 @@ extension AppleInterfaceStyle {
     public static let Coordinator = AppleInterfaceStyleCoordinator()
 }
 
-/// This class coordinates between scheduler and screen brightness observer.
+/// This class coordinates scheduler updates with appearance changes.
 public class AppleInterfaceStyleCoordinator: NSObject {
     fileprivate override init() { super.init() }
     
@@ -27,10 +27,12 @@ public class AppleInterfaceStyleCoordinator: NSObject {
     @MainActor
     @objc public func toggleOrShowInterface() {
         if preferences.AppleInterfaceStyleSwitchesAutomatically {
-            reopen()
-        } else {
-            AppleInterfaceStyle.toggle()
+            preferences.AppleInterfaceStyleSwitchesAutomatically = false
+            if preferences.scheduleZenithType == .system {
+                preferences.scheduleZenithType = .official
+            }
         }
+        AppleInterfaceStyle.toggle()
     }
     
     public func setup() {
@@ -42,19 +44,14 @@ public class AppleInterfaceStyleCoordinator: NSObject {
         ) { _ in
             AppleInterfaceStyle.updateWallpaper()
         }
-        guard preferences.scheduled else {
-            guard preferences.adjustForBrightness else { return }
-            // No need for scheduler, only enable brightness observer
-            return ScreenBrightnessObserver.shared.startObserving()
-        }
+        guard preferences.scheduled else { return }
         Connectivity.default.scheduleWhenReconnected()
-        Scheduler.shared.schedule(startBrightnessObserverOnFailure: true)
+        Scheduler.shared.schedule()
     }
     
     public func tearDown(stopAppearanceObservation: Bool = true) {
         Scheduler.shared.cancel()
         Connectivity.default.stopObserving()
-        ScreenBrightnessObserver.shared.stopObserving()
         if stopAppearanceObservation {
             if let appearanceObservation {
                 NotificationCenter.default.removeObserver(appearanceObservation)

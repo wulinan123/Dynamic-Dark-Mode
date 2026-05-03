@@ -94,14 +94,6 @@ public final class StatusBarItem {
         ))
         menu.addItem(submenuItem(
             title: NSLocalizedString(
-                "Menu.brightness",
-                value: "Brightness",
-                comment: "Menu section for brightness settings"
-            ),
-            submenu: buildBrightnessMenu(usesSystemAutomation: usesSystemAutomation)
-        ))
-        menu.addItem(submenuItem(
-            title: NSLocalizedString(
                 "Menu.desktop",
                 value: "Desktop",
                 comment: "Menu section for desktop wallpaper settings"
@@ -196,43 +188,6 @@ public final class StatusBarItem {
             item.isEnabled = isEnabled
             menu.addItem(item)
         }
-        return menu
-    }
-
-    private func buildBrightnessMenu(usesSystemAutomation: Bool) -> NSMenu {
-        let menu = NSMenu()
-        let adjustItem = makeItem(
-            title: NSLocalizedString(
-                "Settings.automation.brightness.toggle",
-                value: "Adjust appearance based on brightness",
-                comment: "Brightness toggle."
-            ),
-            action: #selector(toggleBrightnessAdjustment)
-        )
-        adjustItem.state = preferences.adjustForBrightness ? .on : .off
-        adjustItem.isEnabled = !usesSystemAutomation
-        menu.addItem(adjustItem)
-
-        let pauseItem = makeItem(
-            title: NSLocalizedString(
-                "Settings.automation.brightness.disableAtNight",
-                value: "Pause brightness switching during scheduled dark mode",
-                comment: "Disable brightness switching during night schedule."
-            ),
-            action: #selector(togglePauseBrightnessAtNight)
-        )
-        pauseItem.state = preferences.disableAdjustForBrightnessWhenScheduledDarkModeOn ? .on : .off
-        pauseItem.isEnabled = !usesSystemAutomation && preferences.adjustForBrightness && preferences.scheduled
-        menu.addItem(pauseItem)
-        menu.addItem(.separator())
-        menu.addItem(makeItem(
-            title: NSLocalizedString(
-                "Menu.brightnessDetails",
-                value: "Brightness Details…",
-                comment: "Menu item to open compact brightness settings"
-            ),
-            action: #selector(showCompactSettingsAction)
-        ))
         return menu
     }
 
@@ -347,14 +302,6 @@ public final class StatusBarItem {
             let mode = Zenith(rawValue: rawValue)
         else { return }
         SettingsStore.shared.scheduleZenithType = mode
-    }
-
-    @objc private func toggleBrightnessAdjustment() {
-        SettingsStore.shared.adjustForBrightness.toggle()
-    }
-
-    @objc private func togglePauseBrightnessAtNight() {
-        SettingsStore.shared.disableAdjustForBrightnessWhenScheduledDarkModeOn.toggle()
     }
 
     @objc private func selectLightWallpaper() {

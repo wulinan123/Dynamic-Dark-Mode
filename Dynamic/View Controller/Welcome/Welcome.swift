@@ -13,8 +13,8 @@ import SwiftUI
 final class WindowRouter: NSObject, NSWindowDelegate {
     static let shared = WindowRouter()
 
-    nonisolated static let onboardingWindowID = NSUserInterfaceItemIdentifier("io.github.apollozhu.dynamic.onboarding")
-    nonisolated static let settingsWindowID = NSUserInterfaceItemIdentifier("io.github.apollozhu.dynamic.settings")
+    nonisolated static let onboardingWindowID = NSUserInterfaceItemIdentifier("io.github.wulinan123.dynamic.onboarding")
+    nonisolated static let settingsWindowID = NSUserInterfaceItemIdentifier("io.github.wulinan123.dynamic.settings")
 
     private var onboardingWindowController: NSWindowController?
     private var settingsWindowController: NSWindowController?

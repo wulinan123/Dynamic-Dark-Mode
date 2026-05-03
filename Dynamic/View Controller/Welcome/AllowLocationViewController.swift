@@ -31,7 +31,7 @@ struct LocationPermissionStepView: View {
             ),
             message: NSLocalizedString(
                 "Onboarding.location.message",
-                value: "Location is only used to calculate daylight-based switching windows. If you skip this, you can still use custom schedules and brightness-based automation.",
+                value: "Location is only used to calculate daylight-based switching windows. If you skip this, you can still use custom schedules.",
                 comment: "Location step message."
             ),
             symbolName: "location.north.circle"

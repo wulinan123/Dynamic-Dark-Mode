@@ -50,10 +50,8 @@
 "Preferences.opensAtLogin.failed" = "Error al actualizar la configuración de \"abrir al iniciar sesión\"";
 
 /* Notification text for bug report */
-"ScreenBrightnessObserver.startObserving.failed" = "No se puede observar el cambio de brillo de la pantalla.";
 
 /* For touch bar button title */
-"SettingsViewController.autoAdjustThreshold" = "Ajustar umbral automáticamente";
 
 /* For touch bar button title */
 "SettingsViewController.scheduleMode" = "Modo de programación";

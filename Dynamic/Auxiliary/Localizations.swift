@@ -9,18 +9,6 @@
 import Foundation
 
 enum LocalizedString {
-    enum SettingsViewController {
-        static let autoAdjustThreshold = NSLocalizedString(
-            "SettingsViewController.autoAdjustThreshold",
-            value: "Auto Adjust Threshold",
-            comment: "For touch bar button title"
-        )
-        static let scheduleMode = NSLocalizedString(
-            "SettingsViewController.scheduleMode",
-            value: "Schedule Mode",
-            comment: "For touch bar button title"
-        )
-    }
     enum SunsetSunrise {
         static let official = NSLocalizedString(
             "SunsetSunrise.official",
