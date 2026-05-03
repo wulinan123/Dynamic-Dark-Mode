@@ -17,6 +17,7 @@ final class WindowRouter: NSObject, NSWindowDelegate {
     nonisolated static let settingsWindowID = NSUserInterfaceItemIdentifier("io.github.apollozhu.dynamic.settings")
     
     private var onboardingWindowController: NSWindowController?
+    private var settingsWindowController: NSWindowController?
     
     private override init() {
         super.init()
@@ -36,21 +37,35 @@ final class WindowRouter: NSObject, NSWindowDelegate {
     
     func showSettings() {
         NSApp.activate(ignoringOtherApps: true)
-        if let window = settingsWindow {
+        if let window = settingsWindowController?.window ?? settingsWindow {
             window.makeKeyAndOrderFront(nil)
             return
         }
-        let selectors = [
-            NSSelectorFromString("showSettingsWindow:"),
-            NSSelectorFromString("showPreferencesWindow:")
-        ]
-        for selector in selectors where NSApp.sendAction(selector, to: nil, from: nil) {
-            return
-        }
+        let hostingController = NSHostingController(rootView: SettingsRootView())
+        let window = NSWindow(contentViewController: hostingController)
+        window.identifier = Self.settingsWindowID
+        window.delegate = self
+        window.title = NSLocalizedString(
+            "Settings.general.title",
+            value: "General",
+            comment: "General tab heading."
+        )
+        window.styleMask = [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView]
+        window.titleVisibility = .hidden
+        window.titlebarAppearsTransparent = true
+        window.isMovableByWindowBackground = true
+        window.toolbarStyle = .preference
+        window.setContentSize(NSSize(width: 860, height: 620))
+        window.center()
+        let controller = NSWindowController(window: window)
+        settingsWindowController = controller
+        controller.showWindow(nil)
+        window.makeKeyAndOrderFront(nil)
     }
     
     func closeSettingsWindow() {
-        settingsWindow?.close()
+        (settingsWindowController?.window ?? settingsWindow)?.close()
+        settingsWindowController = nil
     }
     
     func showOnboarding() {
@@ -97,6 +112,9 @@ final class WindowRouter: NSObject, NSWindowDelegate {
         guard let window = notification.object as? NSWindow else { return }
         if window.identifier == Self.onboardingWindowID {
             onboardingWindowController = nil
+        }
+        if window.identifier == Self.settingsWindowID {
+            settingsWindowController = nil
         }
     }
     
