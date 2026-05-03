@@ -305,6 +305,276 @@ struct SettingsRootView: View {
     }
 }
 
+struct CompactSettingsPopoverView: View {
+    @ObservedObject var store: SettingsStore
+
+    private let zenithModes: [Zenith] = [.official, .civil, .nautical, .astronomical, .custom, .system]
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                header
+
+                CompactSettingsSection(
+                    title: NSLocalizedString(
+                        "Settings.general.shortcut.title",
+                        value: "Shortcut",
+                        comment: "Shortcut section title."
+                    )
+                ) {
+                    ShortcutRecorderView()
+                        .frame(height: 32)
+                        .disabled(store.usesSystemAutomation)
+                    Text(store.usesSystemAutomation
+                        ? NSLocalizedString(
+                            "Settings.general.shortcut.disabled",
+                            value: "Disabled while system appearance automation is enabled.",
+                            comment: "Shortcut disabled note."
+                        )
+                        : NSLocalizedString(
+                            "Settings.general.shortcut.enabled",
+                            value: "Available for instant manual switching.",
+                            comment: "Shortcut enabled note."
+                        )
+                    )
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                }
+
+                CompactSettingsSection(
+                    title: NSLocalizedString(
+                        "Settings.automation.schedule.title",
+                        value: "Schedule",
+                        comment: "Schedule section title."
+                    )
+                ) {
+                    Toggle(
+                        NSLocalizedString(
+                            "Settings.automation.schedule.toggle",
+                            value: "Enable scheduled switching",
+                            comment: "Schedule toggle."
+                        ),
+                        isOn: Binding(
+                            get: { store.scheduled },
+                            set: { store.scheduled = $0 }
+                        )
+                    )
+                    .disabled(store.usesSystemAutomation)
+
+                    Picker(
+                        NSLocalizedString(
+                            "Settings.automation.schedule.mode",
+                            value: "Schedule mode",
+                            comment: "Schedule mode picker."
+                        ),
+                        selection: Binding(
+                            get: { store.scheduleZenithType },
+                            set: { store.scheduleZenithType = $0 }
+                        )
+                    ) {
+                        ForEach(zenithModes, id: \.rawValue) { mode in
+                            Text(mode.localizedName).tag(mode)
+                        }
+                    }
+                    .disabled(store.usesSystemAutomation || !store.scheduled)
+
+                    if store.scheduleZenithType == .custom {
+                        DatePicker(
+                            NSLocalizedString(
+                                "Settings.automation.schedule.from",
+                                value: "From",
+                                comment: "Schedule start label."
+                            ),
+                            selection: Binding(
+                                get: { store.scheduleStart },
+                                set: { store.scheduleStart = $0 }
+                            ),
+                            displayedComponents: .hourAndMinute
+                        )
+                        .disabled(store.usesSystemAutomation || !store.scheduled)
+
+                        DatePicker(
+                            NSLocalizedString(
+                                "Settings.automation.schedule.to",
+                                value: "To",
+                                comment: "Schedule end label."
+                            ),
+                            selection: Binding(
+                                get: { store.scheduleEnd },
+                                set: { store.scheduleEnd = $0 }
+                            ),
+                            displayedComponents: .hourAndMinute
+                        )
+                        .disabled(store.usesSystemAutomation || !store.scheduled)
+                    }
+                }
+
+                CompactSettingsSection(
+                    title: NSLocalizedString(
+                        "Settings.automation.brightness.title",
+                        value: "Brightness",
+                        comment: "Brightness section title."
+                    )
+                ) {
+                    HStack {
+                        Text(String(
+                            format: NSLocalizedString(
+                                "Settings.automation.brightness.threshold",
+                                value: "Threshold: %.0f%%",
+                                comment: "Brightness threshold label."
+                            ),
+                            store.brightnessThreshold * 100
+                        ))
+                        Spacer()
+                    }
+                    Slider(
+                        value: Binding(
+                            get: { store.brightnessThreshold },
+                            set: { store.brightnessThreshold = $0 }
+                        ),
+                        in: 0...1
+                    )
+                    .disabled(store.usesSystemAutomation || !store.adjustForBrightness)
+                }
+
+                CompactSettingsSection(
+                    title: NSLocalizedString(
+                        "Settings.desktop.title",
+                        value: "Desktop",
+                        comment: "Desktop tab heading."
+                    )
+                ) {
+                    DesktopPreviewRow(
+                        title: NSLocalizedString(
+                            "Settings.desktop.preview.light",
+                            value: "Light appearance",
+                            comment: "Light wallpaper preview title."
+                        ),
+                        url: store.lightDesktopURL,
+                        symbolName: "sun.max.fill"
+                    )
+                    DesktopPreviewRow(
+                        title: NSLocalizedString(
+                            "Settings.desktop.preview.dark",
+                            value: "Dark appearance",
+                            comment: "Dark wallpaper preview title."
+                        ),
+                        url: store.darkDesktopURL,
+                        symbolName: "moon.fill"
+                    )
+                    VStack(alignment: .leading, spacing: 8) {
+                        Button(
+                            NSLocalizedString(
+                                "Settings.desktop.panel.selectLight",
+                                value: "Choose Light Wallpaper…",
+                                comment: "Select light wallpaper action."
+                            ),
+                            action: store.selectLightWallpaper
+                        )
+                        Button(
+                            NSLocalizedString(
+                                "Settings.desktop.panel.selectDark",
+                                value: "Choose Dark Wallpaper…",
+                                comment: "Select dark wallpaper action."
+                            ),
+                            action: store.selectDarkWallpaper
+                        )
+                    }
+                    if store.lightDesktopURL != nil || store.darkDesktopURL != nil {
+                        Button(
+                            NSLocalizedString(
+                                "Settings.desktop.clear",
+                                value: "Clear",
+                                comment: "Clear wallpaper mappings action."
+                            ),
+                            action: store.clearWallpapers
+                        )
+                    }
+                }
+
+                CompactSettingsSection(
+                    title: NSLocalizedString(
+                        "Settings.about.title",
+                        value: "About",
+                        comment: "About tab heading."
+                    )
+                ) {
+                    HStack(spacing: 8) {
+                        Button("Project", action: store.openProject)
+                        Button(
+                            NSLocalizedString(
+                                "Settings.about.feedback",
+                                value: "Send Feedback",
+                                comment: "Feedback action."
+                            ),
+                            action: store.openIssues
+                        )
+                    }
+                    VStack(alignment: .leading, spacing: 8) {
+                        Button(
+                            NSLocalizedString(
+                                "Settings.about.reset",
+                                value: "Run Setup Again",
+                                comment: "Reset setup action."
+                            ),
+                            action: store.resetSetup
+                        )
+                        Button(
+                            NSLocalizedString(
+                                "Menu.advancedSettings",
+                                value: "Advanced Settings…",
+                                comment: "Menu item to show the full settings window"
+                            )
+                        ) {
+                            WindowRouter.shared.showSettings()
+                        }
+                    }
+                }
+            }
+            .padding(16)
+        }
+        .frame(width: 360, height: 420)
+        .background(.regularMaterial)
+    }
+
+    private var header: some View {
+        HStack(spacing: 10) {
+            Image(systemName: AppearanceMonitor.shared.currentStyle == .darkAqua ? "moon.fill" : "sun.max.fill")
+                .font(.title2)
+                .symbolRenderingMode(.hierarchical)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(NSLocalizedString(
+                    "Settings.popover.title",
+                    value: "Dynamic Dark Mode",
+                    comment: "Compact popover title"
+                ))
+                .font(.headline)
+                Text(store.currentAppearanceLabel)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+        }
+    }
+}
+
+private struct CompactSettingsSection<Content: View>: View {
+    let title: String
+    @ViewBuilder var content: Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(title)
+                .font(.subheadline.weight(.semibold))
+            content
+        }
+        .controlSize(.small)
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+    }
+}
+
 private struct LegacySettingsPanel: View {
     @ObservedObject var store: SettingsStore
     @Environment(\.colorScheme) private var colorScheme
@@ -462,24 +732,6 @@ private struct LegacySettingsPanel: View {
                             .frame(width: 150)
                         }
                         .disabled(store.usesSystemAutomation || !store.scheduled || store.scheduleZenithType != .custom)
-                    }
-
-                    LegacySettingsRow(
-                        NSLocalizedString(
-                            "Settings.general.menuBar.title",
-                            value: "Menu Bar",
-                            comment: "Menu bar section title."
-                        )
-                    ) {
-                        Picker("", selection: Binding(
-                            get: { store.statusBarStyle },
-                            set: { store.statusBarStyle = $0 }
-                        )) {
-                            ForEach(StatusBarItem.Style.allCases, id: \.rawValue) { style in
-                                Text(style.localizedName).tag(style)
-                            }
-                        }
-                        .labelsHidden()
                     }
 
                     LegacySettingsRow(
@@ -736,36 +988,6 @@ struct GeneralSettingsTab: View {
             value: "General",
             comment: "General tab heading."
         ), subtitle: store.currentAppearanceLabel) {
-            SettingsCard(
-                title: NSLocalizedString(
-                    "Settings.general.menuBar.title",
-                    value: "Menu Bar",
-                    comment: "Menu bar section title."
-                ),
-                subtitle: NSLocalizedString(
-                    "Settings.general.menuBar.subtitle",
-                    value: "Choose how the status item behaves when you click it.",
-                    comment: "Menu bar section subtitle."
-                )
-            ) {
-                Picker(
-                    NSLocalizedString(
-                        "Settings.general.menuBar.mode",
-                        value: "Interaction",
-                        comment: "Menu bar interaction label."
-                    ),
-                    selection: Binding(
-                        get: { store.statusBarStyle },
-                        set: { store.statusBarStyle = $0 }
-                    )
-                ) {
-                    ForEach(StatusBarItem.Style.allCases, id: \.rawValue) { style in
-                        Text(style.localizedName).tag(style)
-                    }
-                }
-                .pickerStyle(.menu)
-            }
-
             SettingsCard(
                 title: NSLocalizedString(
                     "Settings.general.shortcut.title",

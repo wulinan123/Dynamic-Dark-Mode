@@ -35,7 +35,25 @@
 "Location.useCache" = "使用之前的位置定时";
 
 /* Drop down menu item to show preferences */
-"Menu.preferences" = "偏好设置...";
+"Menu.preferences" = "设置…";
+
+/* Menu item to show the full settings window */
+"Menu.advancedSettings" = "高级设置…";
+
+/* Menu section for appearance automation settings */
+"Menu.automation" = "自动化";
+
+/* Menu section for brightness settings */
+"Menu.brightness" = "亮度";
+
+/* Menu item to open compact brightness settings */
+"Menu.brightnessDetails" = "亮度详细设置…";
+
+/* Menu section for desktop wallpaper settings */
+"Menu.desktop" = "桌面";
+
+/* Menu section for app integrations */
+"Menu.integrations" = "集成";
 
 /* Use system translation for quit */
 "Menu.quit" = "退出";
@@ -129,6 +147,7 @@
 
 "Settings.currentAppearance.dark" = "当前为深色外观";
 "Settings.currentAppearance.light" = "当前为浅色外观";
+"Settings.popover.title" = "自动深色模式";
 
 "Settings.desktop.clear" = "清除";
 "Settings.desktop.manage" = "管理壁纸…";

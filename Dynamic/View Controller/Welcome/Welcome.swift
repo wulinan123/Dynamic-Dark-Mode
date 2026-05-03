@@ -100,7 +100,6 @@ final class WindowRouter: NSObject, NSWindowDelegate {
         preferences.hasLaunchedBefore = true
         Preferences.setupAsSuggested()
         AppBootstrapper.shared.startIfNeeded()
-        showSettings()
     }
 
     func closeOnboarding() {
