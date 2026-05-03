@@ -510,25 +510,14 @@ struct CompactSettingsPopoverView: View {
                             action: store.openIssues
                         )
                     }
-                    VStack(alignment: .leading, spacing: 8) {
-                        Button(
-                            NSLocalizedString(
-                                "Settings.about.reset",
-                                value: "Run Setup Again",
-                                comment: "Reset setup action."
-                            ),
-                            action: store.resetSetup
-                        )
-                        Button(
-                            NSLocalizedString(
-                                "Menu.advancedSettings",
-                                value: "Advanced Settings…",
-                                comment: "Menu item to show the full settings window"
-                            )
-                        ) {
-                            WindowRouter.shared.showSettings()
-                        }
-                    }
+                    Button(
+                        NSLocalizedString(
+                            "Settings.about.reset",
+                            value: "Run Setup Again",
+                            comment: "Reset setup action."
+                        ),
+                        action: store.resetSetup
+                    )
                 }
             }
             .padding(16)

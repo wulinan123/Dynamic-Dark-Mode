@@ -52,8 +52,10 @@ public final class StatusBarItem {
     @objc private func handleEvent() {
         if NSApp.currentEvent?.type == .rightMouseUp {
             showMenu()
+        } else if preferences.AppleInterfaceStyleSwitchesAutomatically {
+            showCompactSettings()
         } else {
-            AppleInterfaceStyle.Coordinator.toggleOrShowInterface()
+            AppleInterfaceStyle.toggle()
         }
     }
 
@@ -127,17 +129,6 @@ public final class StatusBarItem {
         )
         settingsItem.keyEquivalentModifierMask = .command
         menu.addItem(settingsItem)
-
-        let advancedSettingsItem = makeItem(
-            title: NSLocalizedString(
-                "Menu.advancedSettings",
-                value: "Advanced Settings…",
-                comment: "Menu item to show the full settings window"
-            ),
-            action: #selector(showAdvancedSettings)
-        )
-        menu.addItem(advancedSettingsItem)
-        menu.addItem(.separator())
 
         let quitItem = makeItem(
             title: NSLocalizedString(
@@ -417,11 +408,6 @@ public final class StatusBarItem {
         compactSettingsPopover = popover
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
     }
-
-    @objc private func showAdvancedSettings() {
-        WindowRouter.shared.showSettings()
-    }
-
     private var appearanceObservation: AnyCancellable?
 
     public func startObserving() {

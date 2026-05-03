@@ -37,9 +37,6 @@
 /* Drop down menu item to show preferences */
 "Menu.preferences" = "设置…";
 
-/* Menu item to show the full settings window */
-"Menu.advancedSettings" = "高级设置…";
-
 /* Menu section for appearance automation settings */
 "Menu.automation" = "自动化";
 

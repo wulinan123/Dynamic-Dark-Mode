@@ -12,6 +12,7 @@ import Schedule
 final class ScreenBrightnessObserver: NSObject {
 
     private var notificationPort: IONotificationPortRef?
+    private var notificationObject: io_object_t = IO_OBJECT_NULL
     private let queue = DispatchQueue(label: "ddm.queue.brightness")
     private lazy var lastBrightness = NSScreen.brightness
     private var callback: IOServiceInterestCallback = { (ctx, service, messageType, messageArgument) in
@@ -29,26 +30,34 @@ final class ScreenBrightnessObserver: NSObject {
 
     public func startObserving(withInitialUpdate: Bool = true) {
         stopObserving()
-        defer { if withInitialUpdate { setNeedsUpdate() } }
         let service = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("AppleBacklightDisplay"))
         guard service != IO_OBJECT_NULL else {
-            #if DEBUG
-            fatalError("AppleBacklightDisplay is IO_OBJECT_NULL")
-            #else
-            return remindReportingBug(NSLocalizedString(
-                "ScreenBrightnessObserver.startObserving.failed",
-                value: "Cannot observe screen brightness change.",
-                comment: "Notification text for bug report"
-            ))
-            #endif
+            return reportObservationUnavailable()
         }
         defer { IOObjectRelease(service) }
-        notificationPort = IONotificationPortCreate(kIOMasterPortDefault)
-        IONotificationPortSetDispatchQueue(notificationPort, queue)
-        var n = io_object_t()
-        let ctx = UnsafeMutableRawPointer(Unmanaged.passRetained(self).toOpaque())
-        IOServiceAddInterestNotification(notificationPort, service, kIOGeneralInterest, callback, ctx, &n)
+        guard let port = IONotificationPortCreate(kIOMasterPortDefault) else {
+            return reportObservationUnavailable()
+        }
+        IONotificationPortSetDispatchQueue(port, queue)
+        let ctx = UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque())
+        let result = IOServiceAddInterestNotification(
+            port,
+            service,
+            kIOGeneralInterest,
+            callback,
+            ctx,
+            &notificationObject
+        )
+        guard result == kIOReturnSuccess else {
+            notificationObject = IO_OBJECT_NULL
+            IONotificationPortDestroy(port)
+            return reportObservationUnavailable()
+        }
+        notificationPort = port
         lastBrightness = NSScreen.brightness
+        if withInitialUpdate {
+            setNeedsUpdate()
+        }
     }
 
     public var suggestedMode: AppleInterfaceStyle {
@@ -56,21 +65,30 @@ final class ScreenBrightnessObserver: NSObject {
         let threshold = preferences.brightnessThreshold
         return brightness < threshold ? .darkAqua : .aqua
     }
-    
+
     private var task: Task?
     private func setNeedsUpdate() {
         task = Plan.after(0.5.seconds).do(queue: .main, action: _updateForBrightnessChange)
     }
-    
+
     private func _updateForBrightnessChange() {
+        guard NSScreen.brightness >= 0 else { return }
         let newValue = suggestedMode
         guard AppleInterfaceStyle.systemCurrent != newValue else { return }
         newValue.enable()
     }
 
     public func stopObserving() {
-        guard notificationPort != nil else { return }
+        if notificationObject != IO_OBJECT_NULL {
+            IOObjectRelease(notificationObject)
+            notificationObject = IO_OBJECT_NULL
+        }
+        guard let notificationPort else { return }
         IONotificationPortDestroy(notificationPort)
         notificationPort = nil
+    }
+
+    private func reportObservationUnavailable() {
+        debugPrint("Dynamic Dark Mode - Cannot observe screen brightness change.")
     }
 }
