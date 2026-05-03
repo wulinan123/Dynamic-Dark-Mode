@@ -12,21 +12,21 @@ import SwiftUI
 @MainActor
 final class WindowRouter: NSObject, NSWindowDelegate {
     static let shared = WindowRouter()
-    
+
     nonisolated static let onboardingWindowID = NSUserInterfaceItemIdentifier("io.github.apollozhu.dynamic.onboarding")
     nonisolated static let settingsWindowID = NSUserInterfaceItemIdentifier("io.github.apollozhu.dynamic.settings")
-    
+
     private var onboardingWindowController: NSWindowController?
     private var settingsWindowController: NSWindowController?
-    
+
     private override init() {
         super.init()
     }
-    
+
     @objc func showSettingsAction(_ sender: Any?) {
         showSettings()
     }
-    
+
     func reopen() {
         if preferences.hasLaunchedBefore {
             showSettings()
@@ -34,7 +34,7 @@ final class WindowRouter: NSObject, NSWindowDelegate {
             showOnboarding()
         }
     }
-    
+
     func showSettings() {
         NSApp.activate(ignoringOtherApps: true)
         if let window = settingsWindowController?.window ?? settingsWindow {
@@ -55,19 +55,19 @@ final class WindowRouter: NSObject, NSWindowDelegate {
         window.titlebarAppearsTransparent = true
         window.isMovableByWindowBackground = true
         window.toolbarStyle = .preference
-        window.setContentSize(NSSize(width: 860, height: 620))
+        window.setContentSize(NSSize(width: 790, height: 760))
         window.center()
         let controller = NSWindowController(window: window)
         settingsWindowController = controller
         controller.showWindow(nil)
         window.makeKeyAndOrderFront(nil)
     }
-    
+
     func closeSettingsWindow() {
         (settingsWindowController?.window ?? settingsWindow)?.close()
         settingsWindowController = nil
     }
-    
+
     func showOnboarding() {
         if let onboardingWindow = onboardingWindowController?.window {
             NSApp.activate(ignoringOtherApps: true)
@@ -94,7 +94,7 @@ final class WindowRouter: NSObject, NSWindowDelegate {
         NSApp.activate(ignoringOtherApps: true)
         window.makeKeyAndOrderFront(nil)
     }
-    
+
     func finishOnboarding() {
         closeOnboarding()
         preferences.hasLaunchedBefore = true
@@ -102,12 +102,12 @@ final class WindowRouter: NSObject, NSWindowDelegate {
         AppBootstrapper.shared.startIfNeeded()
         showSettings()
     }
-    
+
     func closeOnboarding() {
         onboardingWindowController?.close()
         onboardingWindowController = nil
     }
-    
+
     func windowWillClose(_ notification: Notification) {
         guard let window = notification.object as? NSWindow else { return }
         if window.identifier == Self.onboardingWindowID {
@@ -117,7 +117,7 @@ final class WindowRouter: NSObject, NSWindowDelegate {
             settingsWindowController = nil
         }
     }
-    
+
     private var settingsWindow: NSWindow? {
         NSApp.windows.first { $0.identifier == Self.settingsWindowID }
     }
@@ -128,11 +128,11 @@ final class Welcome: NSWindowController {
     static func show() {
         WindowRouter.shared.showOnboarding()
     }
-    
+
     static func skip() {
         WindowRouter.shared.finishOnboarding()
     }
-    
+
     static func close() {
         WindowRouter.shared.closeOnboarding()
     }
@@ -140,7 +140,7 @@ final class Welcome: NSWindowController {
 
 struct OnboardingFlowView: View {
     @StateObject private var model = OnboardingFlowModel()
-    
+
     var body: some View {
         ZStack {
             OnboardingBackdrop()
@@ -151,7 +151,7 @@ struct OnboardingFlowView: View {
                     }
                 }
                 .padding(.top, 12)
-                
+
                 currentStepView
                     .transition(.opacity.combined(with: .scale(scale: 0.98)))
             }
@@ -172,7 +172,7 @@ struct OnboardingFlowView: View {
             }
         )
     }
-    
+
     @ViewBuilder
     private var currentStepView: some View {
         switch model.step {
@@ -201,7 +201,7 @@ struct OnboardingFlowView: View {
             }
         }
     }
-    
+
     private func stepPill(for step: OnboardingStep) -> some View {
         let isCurrent = step == model.step
         return HStack(spacing: 10) {

@@ -162,6 +162,14 @@
 "Settings.general.updates.auto" = "自动检查更新";
 "Settings.general.updates.manual" = "检查更新…";
 
+"Settings.legacy.automation" = "自动切换";
+"Settings.legacy.done" = "保存";
+"Settings.legacy.help" = "打开项目帮助";
+"Settings.legacy.other" = "其他";
+"Settings.legacy.threshold" = "阈值";
+"Settings.legacy.title" = "自动深色模式设置";
+"Settings.legacy.touchBar" = "触控栏";
+
 "Settings.location.unknown" = "暂无缓存位置";
 "Settings.menuBarStyle.hidden" = "隐藏";
 "Settings.menuBarStyle.menu" = "显示菜单";
