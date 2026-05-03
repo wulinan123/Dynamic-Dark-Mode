@@ -1,7 +1,7 @@
 name: Build macOS App
 
 run-name: >-
-  Build macOS App (${{ github.event_name == 'workflow_dispatch' && inputs.configuration || 'Release' }})
+  Build macOS App (${{ github.event_name == 'workflow_dispatch' && inputs.configuration || 'Debug' }})
   by @${{ github.actor }}
 
 on:
@@ -31,8 +31,10 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 45
     env:
-      BUILD_CONFIGURATION: ${{ github.event_name == 'workflow_dispatch' && inputs.configuration || 'Release' }}
+      BUILD_CONFIGURATION: ${{ github.event_name == 'workflow_dispatch' && inputs.configuration || 'Debug' }}
       DERIVED_DATA_PATH: build/DerivedData
+      RESULT_BUNDLE_PATH: build/DynamicDarkMode.xcresult
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout repository
@@ -66,24 +68,36 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          swift build --target DesktopWallpaperSelection
+          swift build --configuration debug --target DesktopWallpaperSelection
+
+      - name: Test support package
+        shell: bash
+        run: |
+          set -euo pipefail
+          swift test --configuration debug
 
       - name: Build app workspace
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p build
+          CURRENT_ARCH="$(uname -m)"
           xcodebuild \
             -workspace "Dynamic Dark Mode.xcworkspace" \
             -scheme "Dynamic Dark Mode" \
             -configuration "$BUILD_CONFIGURATION" \
             -destination "platform=macOS" \
             -derivedDataPath "$DERIVED_DATA_PATH" \
+            -resultBundlePath "$RESULT_BUNDLE_PATH" \
+            ARCHS="$CURRENT_ARCH" \
+            ONLY_ACTIVE_ARCH=YES \
+            COMPILER_INDEX_STORE_ENABLE=NO \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             build | tee build/xcodebuild.log
 
       - name: Package build outputs
+        if: success()
         shell: bash
         run: |
           set -euo pipefail
@@ -93,11 +107,13 @@ jobs:
             "$BUILD_CONFIGURATION"
 
       - name: Upload build artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: Dynamic-Dark-Mode-${{ env.BUILD_CONFIGURATION }}
           path: |
-            build/artifacts/Dynamic-Dark-Mode-${{ env.BUILD_CONFIGURATION }}.tgz
             build/xcodebuild.log
-          if-no-files-found: error
+            build/DynamicDarkMode.xcresult
+            build/artifacts/Dynamic-Dark-Mode-${{ env.BUILD_CONFIGURATION }}.tgz
+          if-no-files-found: warn
           retention-days: 14
