@@ -149,7 +149,7 @@ public final class Scheduler: NSObject {
         let end = Calendar.current.dateComponents(
             [.hour, .minute], from: preferences.scheduleEnd
         )
-        if start == end { return (.current, nil) }
+        if start == end { return (.systemCurrent, nil) }
         if current < end {
             return (.darkAqua, Calendar.current.date(
                 bySettingHour: end.hour!, minute: end.minute!, second: 0, of: now
