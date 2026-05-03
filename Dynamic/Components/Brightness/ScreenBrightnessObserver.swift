@@ -30,12 +30,12 @@ final class ScreenBrightnessObserver: NSObject {
 
     public func startObserving(withInitialUpdate: Bool = true) {
         stopObserving()
-        let service = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("AppleBacklightDisplay"))
+        let service = IOServiceGetMatchingService(kIOMainPortDefault, IOServiceMatching("AppleBacklightDisplay"))
         guard service != IO_OBJECT_NULL else {
             return reportObservationUnavailable()
         }
         defer { IOObjectRelease(service) }
-        guard let port = IONotificationPortCreate(kIOMasterPortDefault) else {
+        guard let port = IONotificationPortCreate(kIOMainPortDefault) else {
             return reportObservationUnavailable()
         }
         IONotificationPortSetDispatchQueue(port, queue)
@@ -83,8 +83,8 @@ final class ScreenBrightnessObserver: NSObject {
             IOObjectRelease(notificationObject)
             notificationObject = IO_OBJECT_NULL
         }
-        guard let notificationPort else { return }
-        IONotificationPortDestroy(notificationPort)
+        guard let port = notificationPort else { return }
+        IONotificationPortDestroy(port)
         notificationPort = nil
     }
 
