@@ -27,7 +27,7 @@ extension Preferences {
         preferences.scheduled = true
         setupDefaultsForNewFeatures()
     }
-    
+
     public static func setupDefaultsForNewFeatures() {
         if !preferences.exists(\.showToggleInTouchBar) {
             preferences.showToggleInTouchBar = true
@@ -37,14 +37,14 @@ extension Preferences {
 
 extension Preferences {
     private static var handles: [NSKeyValueObservation] = []
-    
+
     @MainActor
     public static func stopObserving() {
         StatusBarItem.only.stopObserving()
         handles.forEach { $0.invalidate() }
         handles = []
     }
-    
+
     @MainActor
     public static func startObserving() {
         stopObserving()
@@ -137,26 +137,23 @@ extension Preferences {
         (NSUserDefaultsController.shared.values as AnyObject)
             .setValue(value, forKey: "\(key)")
     }
-    
+
     func exists(_ key: String) -> Bool {
         return object(forKey: key) != nil
     }
-    
+
     func exists<T>(_ keyPath: KeyPath<Preferences, T>) -> Bool {
         return exists(keyPathString(for: keyPath))
     }
-    
+
     private func keyPathString<T>(for keyPath: KeyPath<Preferences, T>) -> String {
         guard let keyPathString = keyPath._kvcKeyPathString else {
-            #if DEBUG
-            fatalError("No key path string")
-            #else
+            remindReportingBug("No key path string for \(keyPath)")
             return ""
-            #endif
         }
         return keyPathString
     }
-    
+
     func bindingKeyPath<T>(_ keyPath: KeyPath<Preferences, T>) -> String {
         return "values.\(keyPathString(for: keyPath))"
     }
@@ -173,7 +170,7 @@ extension Preferences {
             setPreferred(to: newValue)
         }
     }
-    
+
     @objc dynamic var scheduleType: Int {
         get {
             return preferences.integer(forKey: #function)
@@ -182,7 +179,7 @@ extension Preferences {
             setPreferred(to: newValue)
         }
     }
-    
+
     var scheduleZenithType: Zenith {
         get {
             return Zenith(rawValue: scheduleType) ?? .official
@@ -191,27 +188,27 @@ extension Preferences {
             scheduleType = newValue.rawValue
         }
     }
-    
+
     @objc dynamic var scheduleStart: Date {
         get {
             return preferences.value(forKey: #function) as? Date
-                ?? Calendar.current.date(from: DateComponents(hour: 22))!
+                ?? Preferences.defaultScheduleStart
         }
         set {
             setPreferred(to: newValue)
         }
     }
-    
+
     @objc dynamic var scheduleEnd: Date {
         get {
             return preferences.value(forKey: #function) as? Date
-                ?? Calendar.current.date(from: DateComponents(hour: 7))!
+                ?? Preferences.defaultScheduleEnd
         }
         set {
             setPreferred(to: newValue)
         }
     }
-    
+
     @objc dynamic var showToggleInTouchBar: Bool {
         get {
             return preferences.bool(forKey: #function)
@@ -220,7 +217,7 @@ extension Preferences {
             setPreferred(to: newValue)
         }
     }
-    
+
     @objc dynamic var opensAtLogin: Bool {
         get {
             return preferences.bool(forKey: #function)
@@ -229,7 +226,7 @@ extension Preferences {
             setPreferred(to: newValue)
         }
     }
-    
+
     @objc dynamic var hasLaunchedBefore: Bool {
         get {
             return preferences.bool(forKey: #function)
@@ -238,7 +235,7 @@ extension Preferences {
             setPreferred(to: newValue)
         }
     }
-    
+
     var location: CLLocation? {
         get {
             return preferences.data(forKey: #function).flatMap { try? NSKeyedUnarchiver
@@ -252,7 +249,7 @@ extension Preferences {
             })
         }
     }
-    
+
     var placemark: String? {
         get {
             return preferences.string(forKey: #function)
@@ -261,7 +258,7 @@ extension Preferences {
             setPreferred(to: newValue)
         }
     }
-    
+
     @objc dynamic var rawSettingsStyle: Int {
         get {
             return preferences.integer(forKey: #function)
@@ -270,7 +267,7 @@ extension Preferences {
             setPreferred(to: newValue)
         }
     }
-    
+
     @objc dynamic var lightDesktopURL: URL? {
         get {
             return preferences.string(forKey: #function).flatMap(URL.init(string:))
@@ -279,7 +276,7 @@ extension Preferences {
             setPreferred(to: newValue?.absoluteString)
         }
     }
-    
+
     @objc dynamic var darkDesktopURL: URL? {
         get {
             return preferences.string(forKey: #function).flatMap(URL.init(string:))
@@ -288,7 +285,7 @@ extension Preferences {
             setPreferred(to: newValue?.absoluteString)
         }
     }
-    
+
     var settingsStyle: StatusBarItem.Style {
         get {
             return StatusBarItem.Style(rawValue: rawSettingsStyle) ?? .menu
@@ -297,9 +294,9 @@ extension Preferences {
             rawSettingsStyle = newValue.rawValue
         }
     }
-    
+
     static let toggleShortcutKey: String = "toggleShortcut"
-    
+
     @objc dynamic var AppleInterfaceStyleSwitchesAutomatically: Bool {
         get {
             SLSGetAppearanceThemeSwitchesAutomatically()
@@ -309,6 +306,16 @@ extension Preferences {
             SLSSetAppearanceThemeSwitchesAutomatically(newValue)
             didChangeValue(forKey: #function)
         }
+    }
+}
+
+private extension Preferences {
+    static var defaultScheduleStart: Date {
+        Calendar.current.date(from: DateComponents(hour: 22)) ?? Date()
+    }
+
+    static var defaultScheduleEnd: Date {
+        Calendar.current.date(from: DateComponents(hour: 7)) ?? Date()
     }
 }
 

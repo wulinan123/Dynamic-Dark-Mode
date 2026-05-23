@@ -17,6 +17,15 @@ on:
         options:
           - Release
           - Debug
+      publish_release:
+        description: Create a GitHub release from this build
+        required: true
+        default: false
+        type: boolean
+      release_tag:
+        description: Release tag to create or update when publishing
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -116,16 +125,40 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+  release:
+    name: Publish Release
+    runs-on: macos-15
+    needs: build
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_release }}
+    permissions:
+      contents: write
+    env:
+      BUILD_CONFIGURATION: ${{ inputs.configuration }}
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: Dynamic-Dark-Mode-${{ env.BUILD_CONFIGURATION }}
+          path: build/release-input
+
       - name: Create GitHub Release
-        if: success()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
           set -euo pipefail
-          # We create a release named after the current ref or run id
-          RELEASE_TAG="v1.6.0-run${GITHUB_RUN_NUMBER}"
+          RELEASE_TAG="${{ inputs.release_tag }}"
+          if [[ -z "$RELEASE_TAG" ]]; then
+            echo "release_tag is required when publish_release is true" >&2
+            exit 1
+          fi
           RELEASE_TITLE="Release ${RELEASE_TAG}"
+          DMG_PATH="build/release-input/artifacts/Dynamic-Dark-Mode-${BUILD_CONFIGURATION}.dmg"
+          test -f "$DMG_PATH"
           echo "Releasing $RELEASE_TAG"
           gh release view "$RELEASE_TAG" || gh release create "$RELEASE_TAG" --title "$RELEASE_TITLE" --notes "Automated release from latest build" --target "${GITHUB_REF_NAME}"
-          gh release upload "$RELEASE_TAG" "build/artifacts/Dynamic-Dark-Mode-${BUILD_CONFIGURATION}.dmg" --clobber
+          gh release upload "$RELEASE_TAG" "$DMG_PATH" --clobber

@@ -76,7 +76,7 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         willPresent notification: UNNotification,
         withCompletionHandler completionHandler:
         @escaping (UNNotificationPresentationOptions) -> Void) {
-        completionHandler(.alert)
+        completionHandler([.banner, .list])
     }
     
     func userNotificationCenter(
@@ -85,7 +85,11 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         withCompletionHandler completionHandler: @escaping () -> Void) {
         defer { completionHandler() }
         let id = response.notification.request.identifier
-        switch UserNotification.Identifier(rawValue: id)! {
+        guard let identifier = UserNotification.Identifier(rawValue: id) else {
+            remindReportingBug("Unknown notification identifier: \(id)")
+            return
+        }
+        switch identifier {
         case .useCache:
             break
         case .reportBug:

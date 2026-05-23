@@ -17,27 +17,28 @@ public enum Location {
 
 final class LocationManager: NSObject, CLLocationManagerDelegate {
     public static let serial = LocationManager()
-    
+
     private var retryCount = 5
     private let timeout = 10.seconds
     typealias Callback = (process: Handler<Location>, onTimeout: Task)
-    
-    private var lock = NSLock()
-    private var callbacks: [Callback] = [] {
-        didSet { if callbacks.isEmpty { manager.stopUpdatingLocation() } }
-    }
+
+    private let lock = NSLock()
+    private var callbacks: [Callback] = []
     private func callback(_ location: Location) {
         lock.lock()
-        defer { lock.unlock() }
-        guard !callbacks.isEmpty else { return }
-        for callback in callbacks {
+        let pendingCallbacks = callbacks
+        callbacks = []
+        retryCount = 5
+        lock.unlock()
+
+        guard !pendingCallbacks.isEmpty else { return }
+        stopUpdatingLocationIfIdle()
+        for callback in pendingCallbacks {
             callback.onTimeout.cancel()
             callback.process(location)
         }
-        callbacks = []
-        retryCount = 5
     }
-    
+
     public func fetch(then processor: @escaping Handler<Location>) {
         lock.lock()
         let task = Plan.after(timeout).do(action: onTimeout)
@@ -45,35 +46,46 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
         lock.unlock()
         startUpdatingLocation()
     }
-    
+
     private func onTimeout(_ task: Task) {
         lock.lock()
-        let idx = callbacks.firstIndex { $0.onTimeout == task }
-        let callback = callbacks.remove(at: idx!) // should not be nil
+        guard let idx = callbacks.firstIndex(where: { $0.onTimeout == task }) else {
+            lock.unlock()
+            return
+        }
+        let callback = callbacks.remove(at: idx)
         callback.onTimeout.cancel()
         lock.unlock()
+
+        stopUpdatingLocationIfIdle()
         onError(AnError(errorDescription:
             LocalizedString.Location.timeout
         ), run: callback.process)
     }
-    
+
     public weak var delegate: CLLocationManagerDelegate?
     private lazy var manager: CLLocationManager = {
         var manager = CLLocationManager()
         manager.delegate = self
         return manager
     }()
-    
-    func locationManager(_ manager: CLLocationManager,
-                         didChangeAuthorization status: CLAuthorizationStatus) {
-        delegate?.locationManager?(manager, didChangeAuthorization: status)
+
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        authorizationDidChange(manager)
+    }
+
+    private func authorizationDidChange(_ manager: CLLocationManager) {
+        delegate?.locationManagerDidChangeAuthorization?(manager)
+        guard !Location.deniedAccess else {
+            onError(CLError.denied)
+            return
+        }
         startUpdatingLocation()
     }
-    
+
     func locationManager(_ manager: CLLocationManager,
                          didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
-        manager.stopUpdatingLocation()
         preferences.location = location
         CLGeocoder().reverseGeocodeLocation(location) { placemarks, _ in
             if let name = placemarks?.first?.name {
@@ -82,15 +94,14 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
         }
         callback(.current(location))
     }
-    
+
     func locationManager(_ manager: CLLocationManager,
                          didFailWithError error: Error) {
         retryCount -= 1
         guard retryCount <= 0 else { return }
-        manager.stopUpdatingLocation()
         onError(error)
     }
-    
+
     private func startUpdatingLocation() {
         if Location.deniedAccess {
             onError(CLError.denied)
@@ -98,7 +109,14 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
             manager.startUpdatingLocation()
         }
     }
-    
+
+    private func stopUpdatingLocationIfIdle() {
+        lock.lock()
+        let shouldStopUpdating = callbacks.isEmpty
+        lock.unlock()
+        if shouldStopUpdating { manager.stopUpdatingLocation() }
+    }
+
     private func onError(_ error: Error, run callback: Handler<Location>! = nil) {
         let callback = callback ?? self.callback
         if let location = preferences.location {
@@ -126,27 +144,27 @@ extension Location {
 
 extension Location {
     static var deniedAccess: Bool {
-        let status = CLLocationManager.authorizationStatus()
+        let status = CLLocationManager().authorizationStatus
         switch status {
         case .authorizedAlways, .notDetermined:
             return false
         case .denied, .restricted:
             return true
         @unknown default:
-            remindReportingBug(status.description)
+            remindReportingBug(status.debugDescription)
             return false
         }
     }
-    
+
     static var allowsAccess: Bool {
-        let status = CLLocationManager.authorizationStatus()
+        let status = CLLocationManager().authorizationStatus
         switch status {
         case .authorizedAlways:
             return true
         case .denied, .notDetermined, .restricted:
             return false
         @unknown default:
-            remindReportingBug(status.description)
+            remindReportingBug(status.debugDescription)
             return false
         }
     }
@@ -165,8 +183,8 @@ func == (lhs: Error?, rhs: CLError) -> Bool {
     return CLError.nsDenied.isEqual(to: lhs)
 }
 
-extension CLAuthorizationStatus: CustomStringConvertible {
-    public var description: String {
+private extension CLAuthorizationStatus {
+    var debugDescription: String {
         switch self {
         case .notDetermined:
             return "CLAuthorizationStatus.notDetermined"

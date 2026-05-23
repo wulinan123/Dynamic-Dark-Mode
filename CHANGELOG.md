@@ -3,6 +3,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+### Changed
+- Release publishing now requires an explicit manual release tag.
+- MASShortcut is pinned to a fixed revision for reproducible builds.
+- README now reflects the current macOS 15+ support target.
+
+### Fixed
+- Avoid crashes from missing sunrise/sunset data, malformed URLs, unknown notifications, shortcut archiving failures, and location timeout races.
+- Use safer Core Location, notification, and AppleScript helper paths on modern macOS.
+- Replace the placeholder DMG/release script with a build-and-package script that publishes only when requested.
+
 ## [1.5.2] - 2019-09-23
 ### Changed
 - Switches dark mode with SkyLight when missing AppleScript permission

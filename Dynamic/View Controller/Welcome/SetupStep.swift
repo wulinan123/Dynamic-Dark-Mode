@@ -136,7 +136,7 @@ final class OnboardingFlowModel: NSObject, ObservableObject, CLLocationManagerDe
         WindowRouter.shared.finishOnboarding()
     }
     
-    nonisolated func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+    nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         guard Location.allowsAccess else { return }
         Task { @MainActor in
             WindowRouter.shared.finishOnboarding()

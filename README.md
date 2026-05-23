@@ -2,9 +2,9 @@
 
 <a href="https://www.producthunt.com/posts/dynamic-dark-mode?utm_source=badge-featured" target="_blank" id="product-hunt"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=145745&theme=light" alt="Dynamic Dark Mode - The smart, automatic Dark Mode toggle for macOS Mojave | Product Hunt Embed" style="height: 50px;" height="50px" /></a>
 
-*Dynamic Dark Mode* is the app you are looking for to power up Dark Mode on macOS Mojave and beyond.
+*Dynamic Dark Mode* is a menu bar utility for switching Dark Mode on macOS 15 and later.
 
-Instead of looking for the switch for dark mode in System Preferences, just click the icon in the menu bar. Ever felt your eyes getting hurt because the screen is so bright in the night? Have to worry no more, we Dynamically enable dark mode in dim lights, after sunset, or just anytime. When you wake up in the morning, it'll a be another bright day.
+Instead of looking for the switch for dark mode in System Settings, click the icon in the menu bar. Dynamic Dark Mode can switch manually, by a custom schedule, or around sunset and sunrise using your location.
 
 ![Settings for Dynamic Dark Mode](https://user-images.githubusercontent.com/10842684/54065701-b240e800-41f2-11e9-8f7a-5d502ab27c4e.png)
 
@@ -63,7 +63,7 @@ This is not quite what you are looking for? Here's a non-comprehensive list of o
 |                                                              | Daylight Schedule | Custom Schedule | Ambient Light | Touch Bar | Shortcut Key | Menu Bar | CLI  | Per App | Localized |
 | ------------------------------------------------------------ | ----------------------- | --------------- | ------------- | ------------------------------------------------------------ | ------------ | -------- | ---- | ------- | --------- |
 | [macOS Dark Mode, Auto](https://support.apple.com/en-us/HT208976) | ✅                       |                 |               |  |              |          |      |         | ✅         |
-| Dynamic Dark Mode                                            | ✅                       | ✅               | ✅*            | ✅ | ✅            | ✅        |      |         | ✅ |
+| Dynamic Dark Mode                                            | ✅                       | ✅               |               | ✅ | ✅            | ✅        |      |         | ✅ |
 | [NightOwl](https://nightowl.kramser.xyz/)                    | ✅                       | ✅               |               |  | ✅            | ✅        |      | ✅       |           |
 | [DarkModeBuddy](https://gumroad.com/l/darkmodebuddy)         |                         |                 | ✅             |  |              |          |      |         |           |
 | [DarkLight](https://github.com/L1cardo/DarkLight) | | | | ✅ | ✅ | | | | |
@@ -75,8 +75,6 @@ This is not quite what you are looking for? Here's a non-comprehensive list of o
 | [Shifty](https://shifty.natethompson.io) (Night Shift) | ✅                       | ✅               |               |  |              |          |      |         | ✅         |
 | [Irvu‪e‬](https://apps.apple.com/app/id1039633667) (wallpaper) |                         |                 |               |  | ✅ | ✅ |      |         |           |
 | [One Switch](https://fireball.studio/oneswitch/) (multi-tool) |                         |                 |               |  |              | ✅        |      |         | ✅ |
-
-> \* Dynamic Dark Mode uses screen brightness, and requires "Automatically adjust brightness" option enabled in System Preferences for ambient light based changes.
 
 ---
 

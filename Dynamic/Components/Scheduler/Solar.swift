@@ -48,38 +48,30 @@ struct Solar {
         self.coordinate = coordinate
     }
     
-    var sunriseSunsetTime: (sunrise: Date, sunset: Date) {
+    var sunriseSunsetTime: (sunrise: Date, sunset: Date)? {
         switch preferences.scheduleZenithType {
         case .custom, .system:
-            fatalError("No custom zenith type in solar")
+            return nil
         case .official:
             return NTSolar.sunRiseAndSet(forDate: date,
                                          ofKind: .official,
                                          atLocation: coordinate,
-                                         inTimeZone: .current)!
+                                         inTimeZone: .current)
         case .civil:
             return NTSolar.sunRiseAndSet(forDate: date,
                                          ofKind: .civil,
                                          atLocation: coordinate,
-                                         inTimeZone: .current)!
+                                         inTimeZone: .current)
         case .nautical:
             return NTSolar.sunRiseAndSet(forDate: date,
                                          ofKind: .nautical,
                                          atLocation: coordinate,
-                                         inTimeZone: .current)!
+                                         inTimeZone: .current)
         case .astronomical:
             return NTSolar.sunRiseAndSet(forDate: date,
                                          ofKind: .astronomical,
                                          atLocation: coordinate,
-                                         inTimeZone: .current)!
+                                         inTimeZone: .current)
         }
     }
 }
-
-extension DateComponents: Comparable {
-    public static func < (lhs: DateComponents, rhs: DateComponents) -> Bool {
-        return lhs.hour! < rhs.hour!
-            || lhs.hour! == rhs.hour! && lhs.minute! < rhs.minute!
-    }
-}
-

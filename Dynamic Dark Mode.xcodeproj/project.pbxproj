@@ -17,7 +17,6 @@
 		52168FC020C8B47200869A9C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 52168FBF20C8B47200869A9C /* Assets.xcassets */; };
 		52168FCF20C8B59300869A9C /* AppleInterfaceStyle+NSAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52168FCE20C8B59300869A9C /* AppleInterfaceStyle+NSAppearance.swift */; };
 		52168FD120C99CB100869A9C /* AppleScriptHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52168FD020C99CB100869A9C /* AppleScriptHelper.swift */; };
-		52168FD520C9A63B00869A9C /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 52168FD720C9A63B00869A9C /* Main.storyboard */; };
 		5225FDBE20D14B96006E9AF0 /* Scheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5225FDBD20D14B96006E9AF0 /* Scheduler.swift */; };
 		5236A8ED21606035009DA3A3 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 5236A8EB21606035009DA3A3 /* InfoPlist.strings */; };
 		5236A8F021606035009DA3A3 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 5236A8EE21606035009DA3A3 /* InfoPlist.strings */; };
@@ -548,7 +547,6 @@
 				DBAA090F27F4350B00F957E6 /* Credits.html in Resources */,
 				52168FC020C8B47200869A9C /* Assets.xcassets in Resources */,
 				5236A8F321606035009DA3A3 /* Localizable.strings in Resources */,
-				52168FD520C9A63B00869A9C /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1053,8 +1051,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/shpakovski/MASShortcut";
 			requirement = {
-				branch = master;
-				kind = branch;
+				kind = revision;
+				revision = 57ccb018863b328a22298a275593a1d87ab4db24;
 			};
 		};
 		DBAA08F927F3EE1B00F957E6 /* XCRemoteSwiftPackageReference "Schedule" */ = {

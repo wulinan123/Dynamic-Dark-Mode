@@ -36,9 +36,9 @@ extension AppleScript {
             DispatchQueue.main.async(execute: mutate)
         }
     }
-    
+
     // MARK: Deprecated API
-    
+
     /// Turns dark mode on/off/to the opposite.
     private var source: String {
         return """
@@ -47,19 +47,22 @@ extension AppleScript {
         end tell
         """
     }
-    
+
     private func useAppleScriptImplementation() {
+        guard let script = NSAppleScript(source: self.source) else {
+            useNonAppStoreCompliantImplementation()
+            return
+        }
         var errorInfo: NSDictionary? = nil
-        NSAppleScript(source: self.source)!
-            .executeAndReturnError(&errorInfo)
+        script.executeAndReturnError(&errorInfo)
         // Handle errors
         if errorInfo != nil {
             useNonAppStoreCompliantImplementation()
         }
     }
-    
+
     // MARK: Private API
-    
+
     private func useNonAppStoreCompliantImplementation() {
         switch self {
         case .toggleDarkMode:
@@ -70,7 +73,7 @@ extension AppleScript {
             SLSSetAppearanceThemeLegacy(false)
         }
     }
-    
+
     private func finishMutation(
         restoring application: NSRunningApplication?,
         then completion: CompletionHandler?
@@ -79,7 +82,7 @@ extension AppleScript {
             MainActor.assumeIsolated {
                 AppearanceMonitor.shared.refresh()
                 completion?()
-                application?.activate(options: [.activateIgnoringOtherApps])
+                application?.activate()
             }
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.12, execute: refresh)
@@ -99,23 +102,18 @@ extension AppleScript {
         value: "You didn't allow Dynamic Dark Mode to manage dark mode",
         comment: ""
     )
-    
+
     public static func redirectToSystemPreferences() {
         openURL("x-apple.systempreferences:com.apple.preference.security?Privacy_Automation")
     }
-    
+
     public static func requestPermission(
         retryOnInternalError: Bool = true,
         then process: @escaping Handler<Bool>
     ) {
         DispatchQueue.global().async {
             let systemEvents = "com.apple.systemevents"
-            // We need to get it running to send it messages
-            NSWorkspace.shared.launchApplication(
-                withBundleIdentifier: systemEvents,
-                additionalEventParamDescriptor: nil,
-                launchIdentifier: nil
-            )
+            launchSystemEventsIfNeeded()
             let target = NSAppleEventDescriptor(bundleIdentifier: systemEvents)
             let status = AEDeterminePermissionToAutomateTarget(
                 target.aeDesc, typeWildCard, typeWildCard, true
@@ -129,12 +127,24 @@ extension AppleScript {
                  errAEEventWouldRequireUserConsent,
                  procNotFound:
                 if retryOnInternalError {
-                    requestPermission(retryOnInternalError: false, then: process)
-                } // else ignore
+                    return requestPermission(retryOnInternalError: false, then: process)
+                }
             default:
                 remindReportingBug("OSStatus \(status)")
             }
             process(false)
+        }
+    }
+
+    private static func launchSystemEventsIfNeeded() {
+        let workspace = NSWorkspace.shared
+        let systemEvents = "com.apple.systemevents"
+        guard
+            let url = workspace.urlForApplication(withBundleIdentifier: systemEvents),
+            workspace.open(url)
+        else {
+            remindReportingBug("Could not find System Events")
+            return
         }
     }
 }

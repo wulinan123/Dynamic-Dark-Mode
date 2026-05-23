@@ -12,13 +12,13 @@ import Schedule
 
 public final class Scheduler: NSObject {
     public static let shared = Scheduler()
-    
+
     private var task: Task?
-    
+
     public func cancel() {
         task = nil
     }
-    
+
     @objc public func schedule() {
         if preferences.AppleInterfaceStyleSwitchesAutomatically { return }
         func processLocation(_ result: Location) {
@@ -33,7 +33,7 @@ public final class Scheduler: NSObject {
         }
         LocationManager.serial.fetch(then: processLocation)
     }
-    
+
     private func scheduleAtLocation(_ location: CLLocation?) {
         UserNotification.removeAll()
         let decision = mode(atLocation: location?.coordinate)
@@ -41,7 +41,7 @@ public final class Scheduler: NSObject {
         guard let date = decision.date else { return }
         task = Plan.at(date).do { [weak self] in self?.schedule() }
     }
-    
+
     @discardableResult
     private func scheduleAtCachedLocation(_ location: CLLocation) -> Bool {
         guard preferences.scheduleZenithType.hasSunriseSunsetTime else {
@@ -58,16 +58,16 @@ public final class Scheduler: NSObject {
         scheduleAtLocation(location)
         return true
     }
-    
+
     // Mark: - Mode
-    
+
     public func updateSchedule(then process: @escaping Handler<Result<Void, Error>>) {
         if preferences.AppleInterfaceStyleSwitchesAutomatically {
             return process(.failure(AnError(errorDescription: "AppleInterfaceStyleSwitchesAutomatically")))
         }
         getCurrentMode { process($0.map { _ in }) }
     }
-    
+
     private func getCurrentMode(then process: @escaping Handler<Result<Mode, Error>>) {
         LocationManager.serial.fetch { [unowned self] in
             switch $0 {
@@ -78,12 +78,14 @@ public final class Scheduler: NSObject {
             }
         }
     }
-    
+
     public typealias Mode = (style: AppleInterfaceStyle, date: Date?)
-    
+
     public func mode(atLocation coordinate: CLLocationCoordinate2D?, now: Date? = nil) -> Mode {
         let now = now ?? Date()
-        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: now)!
+        guard let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: now) else {
+            return (.systemCurrent, nil)
+        }
         if let coordinate = coordinate
             , CLLocationCoordinate2DIsValid(coordinate)
             , preferences.scheduleZenithType.hasSunriseSunsetTime {
@@ -92,22 +94,35 @@ public final class Scheduler: NSObject {
             return staticCurrentMode(fromToday: now, andTomorrow: tomorrow)
         }
     }
-    
+
     private func dynamicCurrentMode(fromToday now: Date, andTomorrow tomorrow: Date,
                                     at coordinate: CLLocationCoordinate2D) -> Mode {
         let scheduledDate: Date
-        let solar = Solar(for: now, coordinate: coordinate)!
-        let dates = solar.sunriseSunsetTime
+        guard
+            let solar = Solar(for: now, coordinate: coordinate),
+            let dates = solar.sunriseSunsetTime
+        else {
+            return staticCurrentMode(fromToday: now, andTomorrow: tomorrow)
+        }
         if now < dates.sunrise {
             scheduledDate = dates.sunrise
-            let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: now)!
-            let pastSolar = Solar(for: yesterday, coordinate: coordinate)!
-            preferences.scheduleStart = pastSolar.sunriseSunsetTime.sunset
+            guard
+                let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: now),
+                let pastSolar = Solar(for: yesterday, coordinate: coordinate),
+                let pastDates = pastSolar.sunriseSunsetTime
+            else {
+                return staticCurrentMode(fromToday: now, andTomorrow: tomorrow)
+            }
+            preferences.scheduleStart = pastDates.sunset
             preferences.scheduleEnd = scheduledDate
             return (.darkAqua, scheduledDate)
         } else {
-            let futureSolar = Solar(for: tomorrow, coordinate: coordinate)!
-            let futureDates = futureSolar.sunriseSunsetTime
+            guard
+                let futureSolar = Solar(for: tomorrow, coordinate: coordinate),
+                let futureDates = futureSolar.sunriseSunsetTime
+            else {
+                return staticCurrentMode(fromToday: now, andTomorrow: tomorrow)
+            }
             if now < dates.sunset {
                 scheduledDate = dates.sunset
                 preferences.scheduleStart = scheduledDate
@@ -121,7 +136,7 @@ public final class Scheduler: NSObject {
             }
         }
     }
-    
+
     private func staticCurrentMode(fromToday now: Date, andTomorrow tomorrow: Date) -> Mode {
         if preferences.scheduleZenithType.hasSunriseSunsetTime {
             preferences.scheduleZenithType = .custom
@@ -134,27 +149,40 @@ public final class Scheduler: NSObject {
             [.hour, .minute], from: preferences.scheduleEnd
         )
         if start == end { return (.systemCurrent, nil) }
-        if current < end {
+        guard
+            let currentHour = current.hour,
+            let currentMinute = current.minute,
+            let startHour = start.hour,
+            let startMinute = start.minute,
+            let endHour = end.hour,
+            let endMinute = end.minute
+        else {
+            return (.systemCurrent, nil)
+        }
+        let currentTime = ScheduleTime(hour: currentHour, minute: currentMinute)
+        let startTime = ScheduleTime(hour: startHour, minute: startMinute)
+        let endTime = ScheduleTime(hour: endHour, minute: endMinute)
+        if currentTime < endTime {
             return (.darkAqua, Calendar.current.date(
-                bySettingHour: end.hour!, minute: end.minute!, second: 0, of: now
+                bySettingHour: endHour, minute: endMinute, second: 0, of: now
             ))
-        } else if current < start {
+        } else if currentTime < startTime {
             return (.aqua, Calendar.current.date(
-                bySettingHour: start.hour!, minute: start.minute!, second: 0, of: now
+                bySettingHour: startHour, minute: startMinute, second: 0, of: now
             ))
-        } else if start > end {
+        } else if startTime > endTime {
             return (.darkAqua, Calendar.current.date(
-                bySettingHour: end.hour!, minute: end.minute!, second: 0, of: tomorrow
+                bySettingHour: endHour, minute: endMinute, second: 0, of: tomorrow
             ))
         } else {
             return (.aqua, Calendar.current.date(
-                bySettingHour: start.hour!, minute: start.minute!, second: 0, of: tomorrow
+                bySettingHour: startHour, minute: startMinute, second: 0, of: tomorrow
             ))
         }
     }
-    
+
     // MARK: - Missed Schedule
-    
+
     private override init() {
         super.init()
         let notifications = [
@@ -174,18 +202,18 @@ public final class Scheduler: NSObject {
             object: nil
         )
     }
-    
+
     deinit {
         NSWorkspace.shared.notificationCenter.removeObserver(self)
         NotificationCenter.default.removeObserver(self)
     }
-    
+
     private var fakeClockChange: Task?
-    
+
     /// Usually it takes 5~15 seconds to happen, so 30 seconds
     /// is a relatively safe but reasonable long waiting time.
     private let waitForfakeClockChange = 30.seconds
-    
+
     /// 2 cases here:
     /// either a real clock change happened
     /// or Mac just wake up from a long sleep
@@ -193,7 +221,7 @@ public final class Scheduler: NSObject {
         guard fakeClockChange == nil else { return }
         schedule()
     }
-    
+
     @objc private func workspaceDidWake() {
         fakeClockChange = Plan.after(waitForfakeClockChange).do { [weak self] in
             self?.fakeClockChange = nil
@@ -209,5 +237,15 @@ public final class Scheduler: NSObject {
         } else if preferences.scheduled {
             schedule() // not sure why would I expect this?
         }
+    }
+}
+
+private struct ScheduleTime: Comparable {
+    let hour: Int
+    let minute: Int
+
+    static func < (lhs: ScheduleTime, rhs: ScheduleTime) -> Bool {
+        lhs.hour < rhs.hour
+            || lhs.hour == rhs.hour && lhs.minute < rhs.minute
     }
 }

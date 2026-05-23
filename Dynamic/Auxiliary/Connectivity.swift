@@ -10,7 +10,7 @@ import Network
 import Schedule
 
 public final class Connectivity {
-    private var monitor: NWPathMonitor!
+    private var monitor: NWPathMonitor?
     private let queue: DispatchQueue
     public init(label: String) {
         self.queue = DispatchQueue(label: label)
@@ -39,14 +39,15 @@ public final class Connectivity {
                 remindReportingBug("\(path.status)")
             }
         }
-        monitor.start(queue: queue)
+        monitor?.start(queue: queue)
         isObserving = true
     }
     
     public func stopObserving() {
         guard isObserving else { return }
         isInitialUpdate = true
-        monitor.cancel()
+        monitor?.cancel()
+        monitor = nil
         isObserving = false
         task = nil
     }

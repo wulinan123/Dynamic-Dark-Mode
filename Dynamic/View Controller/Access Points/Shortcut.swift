@@ -15,8 +15,10 @@ enum Shortcut {
         MASShortcutBinder.shared()?.bindShortcut(
             withDefaultsKey: Preferences.toggleShortcutKey,
             toAction: {
-                Task { @MainActor in
-                    AppleInterfaceStyle.Coordinator.toggleOrShowInterface()
+                Task {
+                    await MainActor.run {
+                        AppleInterfaceStyle.Coordinator.toggleOrShowInterface()
+                    }
                 }
             }
         )
@@ -29,14 +31,21 @@ enum Shortcut {
     /// Command-Shift-T
     private static func setDefaultToggleShortcut() {
         guard !preferences.exists(Preferences.toggleShortcutKey) else { return }
-        let event = NSEvent.keyEvent(with: .keyDown, location: .zero, modifierFlags: [.command, .shift],
-                                     timestamp: 0, windowNumber: 0, context: nil,
-                                     characters: "T", charactersIgnoringModifiers: "t",
-                                     isARepeat: false, keyCode: UInt16(kVK_ANSI_T))!
+        guard let event = NSEvent.keyEvent(with: .keyDown, location: .zero, modifierFlags: [.command, .shift],
+                                           timestamp: 0, windowNumber: 0, context: nil,
+                                           characters: "T", charactersIgnoringModifiers: "t",
+                                           isARepeat: false, keyCode: UInt16(kVK_ANSI_T)) else {
+            remindReportingBug("Failed to create default shortcut event")
+            return
+        }
         let shortcut = MASShortcut(event: event)
         let shortcuts = [Preferences.toggleShortcutKey: shortcut]
         MASShortcutBinder.shared()?.registerDefaultShortcuts(shortcuts)
-        let data = try! NSKeyedArchiver.archivedData(withRootObject: shortcut, requiringSecureCoding: true)
-        preferences.setPreferred(to: data, forKey: Preferences.toggleShortcutKey)
+        do {
+            let data = try NSKeyedArchiver.archivedData(withRootObject: shortcut, requiringSecureCoding: true)
+            preferences.setPreferred(to: data, forKey: Preferences.toggleShortcutKey)
+        } catch {
+            remindReportingBug(error.localizedDescription)
+        }
     }
 }
